@@ -34,7 +34,7 @@ class CQBConnection():
 
 		if connection is None:
 			import MySQLdb
-			
+
 			self.connection = MySQLdb.connect(user=user, passwd=passwd, host=host, port=port, **kwargs)
 			self.store_connection(connection_name)
 			return self
@@ -55,15 +55,3 @@ class CQBConnection():
 			cursor.execute(query_text, replacements)
 
 		return cursor.fetchall()
-
-#some testing
-if __name__ == '__main__':
-	print "Init."
-	con = CQBConnection();
-	print "Connect."
-	con.connect("default", "root", "kaizer")
-	print "Set DB to youcallmd."
-	con.set_database("youcallmd")
-	print "Grab users limit 1."
-	results = con.query("SELECT * FROM users LIMIT 1")
-	print results
