@@ -25,7 +25,7 @@ class CQBConnection():
 		else:
 			return None
 
-	def connect(self, connection_name, user, passwd, host = 'localhost', port = 3306, **kwargs):
+	def connect(self, DB, connection_name, user, passwd, host = 'localhost', port = 3306, **kwargs):
 		"""
 		Connects to the database specified and stores it.
 		If a connection with that name already exists, returns that connection.
@@ -33,9 +33,7 @@ class CQBConnection():
 		connection = self.get_connection(connection_name)
 
 		if connection is None:
-			import MySQLdb
-
-			self.connection = MySQLdb.connect(user=user, passwd=passwd, host=host, port=port, **kwargs)
+			self.connection = DB.connect(user=user, passwd=passwd, host=host, port=port, **kwargs)
 			self.store_connection(connection_name)
 			return self
 		else:
@@ -55,3 +53,4 @@ class CQBConnection():
 			cursor.execute(query_text, replacements)
 
 		return cursor.fetchall()
+	

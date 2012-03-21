@@ -2,6 +2,13 @@
 
 import sys, wx
 
+import connection
+
+import MySQLdb
+
+DB = MySQLdb
+connection.CQBConnection(self, DB, 'devycmd', 'youcallmd', '19u8hf9quh', 'dev.youcallmd.com', port = 3306)
+
 class CQBFrame(wx.Frame):
     panel1 = None
     panel2 = None
