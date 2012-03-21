@@ -1,4 +1,4 @@
-
+#! /usr/bin/python
 
 class CQBConnection():
 	_connections = {}

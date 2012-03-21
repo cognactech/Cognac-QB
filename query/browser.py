@@ -1,9 +1,7 @@
+#! /usr/bin/python
+
 import wx
 import event
-
-class CQBQueryApp(wx.App):
-	def OnInit(self):
-		CQBQueryBrowser(self)
 
 class CQBQueryBrowser(wx.Frame, event.QCBQueryEvent):
 	
@@ -21,7 +19,10 @@ class CQBQueryBrowser(wx.Frame, event.QCBQueryEvent):
 		self.Centre()
 	
 	def bindEvents(self):
-		self.Bind(self.EVT_CQB_QRY_RFRSH, CQBQueryController.refresh, self)
+		self.Bind(self.EVT_CQB_QRY_RFRSH, refreshQueryData, self)
+	
+	def refreshQueryData(self):
+		pass
 	
 	def buildMenuBar(self):
 		runQueryMenuItem = fileMenu.Append(wx.ID_ANY, '&Run\tCtrl+R', 'Run Query')
@@ -63,7 +64,3 @@ class CQBQueryBrowser(wx.Frame, event.QCBQueryEvent):
 
 class CQBQueryBrowserToolbar():
 	pass
-	
-if __name__ == '__main__':
-	app = CQBQueryApp(title='New Query', size=(500, 600))
-	app.MainLoop()

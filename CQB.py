@@ -1,4 +1,4 @@
-#!/usr/bin/python32
+#! /usr/bin/python
 
 import sys, wx
 
