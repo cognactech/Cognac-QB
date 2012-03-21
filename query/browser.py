@@ -7,7 +7,7 @@ class CQBQueryApp(wx.App):
 class CQBQueryBrowser(wx.Frame):
 	
 	def __init__ (self, parent, *args, **kwargs):
-		super(__init__, self, args, kwargs)
+		super(__init__, self, *args, **kwargs)
 		
 		self.buildMenubar()
 		self.buildSizers()
@@ -49,8 +49,8 @@ class CQBQueryBrowser(wx.Frame):
 		self.GetEventHandler().ProcessEvent(evt)
 
 class CQBQueryBrowserToolbar():
+	pass
 	
-	
-if __name__ == '__main__'
-	app = CQBQueryApp(title='New Query' size=(500, 600))
+if __name__ == '__main__':
+	app = CQBQueryApp(title='New Query', size=(500, 600))
 	app.MainLoop()
