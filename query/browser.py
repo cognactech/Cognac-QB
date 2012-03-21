@@ -1,10 +1,11 @@
 import wx
+import event from query
 
 class CQBQueryApp(wx.App):
 	def OnInit(self):
 		CQBQueryBrowser(self)
 
-class CQBQueryBrowser(wx.Frame):
+class CQBQueryBrowser(wx.Frame, query.QCBQueryEvent):
 	
 	def __init__ (self, parent, *args, **kwargs):
 		super(__init__, self, *args, **kwargs)
@@ -18,8 +19,22 @@ class CQBQueryBrowser(wx.Frame):
 		
 		self.Centre()
 	
+	def bindEvents(self):
+		self.Bind(self.EVT_CQB_QRY_RFRSH, self.refreshQueryBrowser, self)
+	
 	def buildMenuBar(self):
-		pass
+		runQueryMenuItem = fileMenu.Append(wx.ID_ANY, '&Run\tCtrl+R', 'Run Query')
+		quitAppMenuItem = fileMenu.Append(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser')
+		
+		self.Bind(wx.EVT_MENU, self.refreshBrowser, runQueryMenuItem)
+		self.Bind(wx.EVT_MENU, self.closeQueryBrowser, quitAppMenuItem)
+	
+	def refreshQueryBrowser(e):
+		self.refreshBrowser()
+	
+	def closeQueryBrowser(e):
+		self.Close()
+		e.skip()
 	
 	def buildSizers():
 		pass
@@ -43,7 +58,7 @@ class CQBQueryBrowser(wx.Frame):
 		evt = CQBQueryEventResults(CQBQueryEventResults_ID, self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
 	
-	def refreshBrowser(self):
+	def refreshBrowser(self, event):
 		''' Triggers QueryEventResults '''
 		evt = CQBQueryEventRefresh(CQBQueryEventRefresh_ID, self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
