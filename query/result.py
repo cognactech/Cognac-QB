@@ -6,9 +6,9 @@ import wx.grid
 class CQBQueryResult(wx.grid.PyGridTableBase):
 
 	def __init__ (self, field_names, results, *args, **kwargs):
+		super(CQBQueryResult, self).__init__(*args, **kwargs)
 		self.field_names = field_names
 		self.results = results
-		super(__init__, self, *args, **kwargs)
 	
 	def GetNumberRows(self):
 		return len(self.results)

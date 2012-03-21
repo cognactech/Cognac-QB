@@ -1,19 +1,16 @@
 #! /usr/bin/python
 
 import wx
-import browser
+import browser as CQBBrowser
 
-class CQBQueryApp(wx.App):
+class CQBQuery(wx.App):
+
 	def OnInit(self):
-		CQBQuery(self)
-
-class CQBQuery():
-	def __init__ (self, *args, **kwargs):
-		super(__init__, self, *args, **kwargs)
-
-	def query(self, query_text = ''):
-		return results
+		mainFrame = CQBBrowser.CQBQueryBrowser(None)
+		self.SetTopWindow(mainFrame)
+		return True
 
 if __name__ == '__main__':
-	app = CQBQueryApp(title='Cognac Query Browser', size=(500, 600))
+	app = CQBQuery()
 	app.MainLoop()
+

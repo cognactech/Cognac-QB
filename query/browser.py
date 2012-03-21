@@ -1,15 +1,24 @@
 #! /usr/bin/python
 
 import wx
-import event
+import event as CQBEvent
 
-class CQBQueryBrowser(wx.Frame, event.QCBQueryEvent):
+class CQBQueryBrowser(wx.Frame, CQBEvent.CQBQueryEvent):
 	
 	def __init__ (self, parent, *args, **kwargs):
-		super(__init__, self, *args, **kwargs)
+		super(CQBQueryBrowser, self).__init__(parent, *args, **kwargs)
 		
 		self.bindEvents()
+		
+		self.menus = {
+			'&File': (
+				(wx.ID_ANY, '&Run\tCtrl+R', 'Run Query', wx.EVT_MENU, self.refreshBrowser),
+				(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser', wx.EVT_MENU, self.closeQueryBrowser)
+			)
+		}
+		
 		self.buildMenubar()
+		
 		self.buildSizers()
 		self.buildToolbar()
 		self.buildStatusBar()
@@ -17,25 +26,34 @@ class CQBQueryBrowser(wx.Frame, event.QCBQueryEvent):
 		self.buildEditor()
 		
 		self.Centre()
+		self.Show(True)
 	
 	def bindEvents(self):
-		self.Bind(self.EVT_CQB_QRY_RFRSH, refreshQueryData, self)
+		self.Bind(CQBEvent.EVT_CQB_QRY_RFRSH, self.refreshQueryData, self)
 	
-	def refreshQueryData(self):
+	def refreshQueryData(self, e):
 		pass
 	
-	def buildMenuBar(self):
-		runQueryMenuItem = fileMenu.Append(wx.ID_ANY, '&Run\tCtrl+R', 'Run Query')
-		quitAppMenuItem = fileMenu.Append(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser')
+	def menuItems(self, menuName):
+		return self.menus[menuName]
+	
+	def buildMenubar(self):
+		menubar = wx.MenuBar()
 		
-		self.Bind(wx.EVT_MENU, self.refreshBrowser, runQueryMenuItem)
-		self.Bind(wx.EVT_MENU, self.closeQueryBrowser, quitAppMenuItem)
+		for key, menu in self.menus.items():
+			Menu = wx.Menu()
+			for id, command, label, event_id, event_callback in menu:
+				item = Menu.Append(id, command, label)
+				self.Bind(event_id, event_callback, item)
+			menubar.Append(Menu, key)
+		
+		self.SetMenuBar(menubar)
 	
-	def closeQueryBrowser(e):
+	def closeQueryBrowser(self, e):
 		self.Close()
-		e.skip()
+		e.Skip()
 	
-	def buildSizers():
+	def buildSizers(self):
 		pass
 	
 	def buildToolbar(self):
@@ -49,17 +67,17 @@ class CQBQueryBrowser(wx.Frame, event.QCBQueryEvent):
 	
 	def browserError(self):
 		''' Triggers QueryEventError '''
-		evt = CQBQueryEventError(CQBQueryEventError_ID, self.GetId())
+		evt = CQBEvent.CQBQueryEventError(CQBEvent.EVT_CQB_QUERYERROR_ID, self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
 	
 	def showBrowser(self):
 		''' Triggers QueryEventResults '''
-		evt = CQBQueryEventResults(CQBQueryEventResults_ID, self.GetId())
+		evt = CQBEvent.CQBQueryEventResults(CQBEvent.EVT_CQB_QRY_RSLTS_ID, self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
 	
 	def refreshBrowser(self, event):
 		''' Triggers QueryEventResults '''
-		evt = CQBQueryEventRefresh(CQBQueryEventRefresh_ID, self.GetId())
+		evt = CQBEvent.CQBQueryEventRefresh(CQBEvent.EVT_CQB_QRY_RFRSH_ID, self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
 
 class CQBQueryBrowserToolbar():

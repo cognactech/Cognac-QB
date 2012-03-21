@@ -25,7 +25,7 @@ class CQBConnection():
 		else:
 			return None
 
-	def connect(self, DB, connection_name, user, passwd, host = 'localhost', port = 3306, **kwargs):
+	def connect(self, DB, connection_name=None, user=None, passwd=None, host = 'localhost', port = 3306, **kwargs):
 		"""
 		Connects to the database specified and stores it.
 		If a connection with that name already exists, returns that connection.
