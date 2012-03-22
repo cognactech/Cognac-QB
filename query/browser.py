@@ -2,83 +2,136 @@
 
 import wx
 import event as CQBEvent
+import result as CQBResult
 
 class CQBQueryBrowser(wx.Frame, CQBEvent.CQBQueryEvent):
+	''' '''
 	
 	def __init__ (self, parent, *args, **kwargs):
-		super(CQBQueryBrowser, self).__init__(parent, *args, **kwargs)
+		''' '''
 		
-		self.bindEvents()
+		super(CQBQueryBrowser, self).__init__(parent, *args, **kwargs)
 		
 		self.menus = {
 			'&File': (
-				(wx.ID_ANY, '&Run\tCtrl+R', 'Run Query', wx.EVT_MENU, self.refreshBrowser),
+				(wx.ID_ANY, '&Run Query\tCtrl+R', 'Run Query', wx.EVT_MENU, self.triggerQueryRun),
+				(wx.ID_ANY, '&Refresh\tShift+Ctrl+R', 'Refresh Results', wx.EVT_MENU, self.triggerRefresh),
 				(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser', wx.EVT_MENU, self.closeQueryBrowser)
 			)
 		}
-		
 		self.buildMenubar()
-		
-		self.buildSizers()
-		self.buildToolbar()
 		self.buildStatusBar()
 		
-		self.buildEditor()
+		self.toolbar_items = (
+			(wx.ID_ANY, "Run Query", "Run Query", "./images/run.png", wx.EVT_MENU, self.triggerQueryRun),
+			(wx.ID_ANY, "Stop Query", "Cancel the execution of the current query", "./images/stop.png", wx.EVT_MENU, self.triggerQueryStop),
+			(wx.ID_ANY, "Load File", "Load SQL from a file", "images/run.png", wx.EVT_MENU, self.loadQueryDialog),
+		)
+		self.buildToolbar()
 		
-		self.Centre()
-		self.Show(True)
-	
-	def bindEvents(self):
-		self.Bind(CQBEvent.EVT_CQB_QRY_RFRSH, self.refreshQueryData, self)
-	
-	def refreshQueryData(self, e):
-		pass
-	
-	def menuItems(self, menuName):
-		return self.menus[menuName]
+		self.buildFrame()
 	
 	def buildMenubar(self):
+		''' Builds menu using [self.menus] '''
+		
 		menubar = wx.MenuBar()
 		
 		for key, menu in self.menus.items():
 			Menu = wx.Menu()
 			for id, command, label, event_id, event_callback in menu:
-				item = Menu.Append(id, command, label)
+				item = Menu.Append(id, command, label) 
 				self.Bind(event_id, event_callback, item)
 			menubar.Append(Menu, key)
 		
 		self.SetMenuBar(menubar)
 	
+	def buildToolbar(self):
+		''' '''
+
+		self.toolbar = self.CreateToolBar()
+		for item in self.toolbar_items:
+			menuitem = self.toolbar.AddSimpleTool(-1, wx.Bitmap(item[3]), item[1], item[2])
+			self.Bind(item[4], item[5], menuitem)
+		self.toolbar.Realize()
+
+	def buildStatusBar(self):
+		''' '''
+
+		self.statusBar = self.CreateStatusBar()
+	
+	def buildFrame(self):
+		''' '''
+		
+		box = wx.BoxSizer()
+		
+		self.splitter = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
+		
+		self.queryEditorPanel = wx.Panel(self.splitter, -1, style=wx.SUNKEN_BORDER)
+		self.queryEditor = CQBQueryCtrl(self.queryEditorPanel, -1, name="QueryEditor")
+		
+		self.resultsGrid = CQBResult.CQBQueryResultGrid(self.splitter, style=wx.SUNKEN_BORDER)
+		self.resultsGrid.CreateGrid(50, 9)
+		
+		# move this to results found callback
+		self.splitter.SplitHorizontally(self.queryEditorPanel, self.resultsGrid, 300)
+		
+		self.splitter.SetSizer(box)
+		
+		self.Centre()
+		self.Show(True)
+	
+	def loadQueryDialog(self, e):
+		''' '''
+		
+		loadQueryDialog = wx.FileDialog(self, style=wx.OPEN)
+
+		if loadQueryDialog.ShowModal() == wx.ID_OK:
+			pass
+
+		loadQueryDialog.Destroy()
+		e.Skip()
+	
 	def closeQueryBrowser(self, e):
+		'''  '''
+
+		self.triggerQueryStop()
 		self.Close()
 		e.Skip()
 	
-	def buildSizers(self):
-		pass
+	def triggerQueryStop(self, e=None):
+		''' Triggers CQBQueryEventStop '''
+		
+		evt = CQBEvent.CQBQueryEventStop(self.GetId())
+		self.GetEventHandler().ProcessEvent(evt)
 	
-	def buildToolbar(self):
-		pass
+	def triggerQueryRun(self, e=None):
+		''' Triggers CQBQueryEventRun '''
+		
+		evt = CQBEvent.CQBQueryEventRun(self.GetId())
+		self.GetEventHandler().ProcessEvent(evt)
 	
-	def buildStatusBar(self):
-		pass
-	
-	def buildEditor(self):
-		pass
-	
-	def browserError(self):
+	def triggerError(self, e=None):
 		''' Triggers QueryEventError '''
-		evt = CQBEvent.CQBQueryEventError(CQBEvent.EVT_CQB_QUERYERROR_ID, self.GetId())
+		
+		evt = CQBEvent.CQBQueryEventError(self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
 	
-	def showBrowser(self):
-		''' Triggers QueryEventResults '''
-		evt = CQBEvent.CQBQueryEventResults(CQBEvent.EVT_CQB_QRY_RSLTS_ID, self.GetId())
+	def triggerRefresh(self, e=None):
+		''' Opens QueryResultGrid and Triggers QueryEventResults '''
+		
+		evt = CQBEvent.CQBQueryEventRefresh(self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
 	
-	def refreshBrowser(self, event):
-		''' Triggers QueryEventResults '''
-		evt = CQBEvent.CQBQueryEventRefresh(CQBEvent.EVT_CQB_QRY_RFRSH_ID, self.GetId())
-		self.GetEventHandler().ProcessEvent(evt)
-
-class CQBQueryBrowserToolbar():
-	pass
+class CQBQueryCtrl(wx.TextCtrl):
+	''' '''
+	
+	def __init__ (self, parent, *args, **kwargs):
+		''' '''
+		
+		#wx.Font(pointSize=12, family=wx.FONTFAMILY_MODERN, style=wx.NORMAL, weight=wx.NORMAL)
+		ctrlStyles = wx.TE_MULTILINE | wx.TE_DONTWRAP | wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB
+		
+		super(CQBQueryCtrl, self).__init__(parent, style=ctrlStyles, *args, **kwargs)
+		
+		self.SetInsertionPoint(0)
+	

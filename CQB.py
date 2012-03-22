@@ -2,7 +2,7 @@
 
 import sys, wx
 
-import connection
+import query as CQBQuery
 
 class CQBFrame(wx.Frame):
     panel1 = None
@@ -43,7 +43,7 @@ class CQBFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.quitApplication, quitAppItem)
     
     def newQuery(self, e):
-        QCBNewQuery(self.panel2)
+        CQBQuery.getNewQueryBrowser(self)
     
     def newConnection(self, e):
         CQBNewConnection(self)
