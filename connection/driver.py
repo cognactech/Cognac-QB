@@ -1,6 +1,3 @@
-import errors
-import sys
-
 class CQBConnectionDriver():
 
 	_instances = {}
@@ -19,15 +16,14 @@ class CQBConnectionDriver():
 		self.driver_type = driver_type.lower()
 
 		#try to import the driver
-		try:
-			module_name = "drivers.%s" % self.driver_type
-			__import__(module_name)
-			self.module = sys.modules[module_name]
+		import sys
+		module_name = "drivers.%s" % self.driver_type
+		__import__(module_name)
+		self.module = sys.modules[module_name]
 
-			cls = getattr(self.module, "CQBConnectionDriver_%s" % self.driver_type)
-			self.driver = cls()
-		except:
-			raise errors.CQBConnectionError("Driver %s not found" % self.driver_type)
+
+		cls = getattr(self.module, "CQBConnectionDriver_%s" % self.driver_type)
+		self.driver = cls()
 
 	def connect(self, **kwargs):
 		self.driver.connect(**kwargs)
@@ -36,9 +32,7 @@ class CQBConnectionDriver():
 		self.driver.set_db(name)
 
 	def query(self, query_text, replacements = ()):
-		if not self.is_connected():
-			raise errors.CQBConnectionError("Driver not connected.")
-
+		#todo: return result set properly
 		return self.driver.query(query_text, replacements)
 
 	def last_query(self):
@@ -47,14 +41,12 @@ class CQBConnectionDriver():
 	def last_error(self):
 		return self.driver.last_error()
 
-	def is_connected(self):
-		return self.driver.is_connected()
 
 if __name__ == '__main__':
 	c = CQBConnectionDriver.instance('mysql', 'mysql')
 	c.connect(user='root',passwd='kaizer')
 	c.set_db("youcallmd");
 	print c.query("SELECT * FROM users WHERE id = %s LIMIT 1", 1455)
-	#print c.last_error()
-	#print c.last_query()
+	print c.last_error()
+	print c.last_query()
 	
