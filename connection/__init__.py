@@ -1,7 +1,7 @@
 import errors
 import sys
 
-class CQBConnectionDriver():
+class CQBConnection():
 
 	_instances = {}
 
@@ -10,10 +10,10 @@ class CQBConnectionDriver():
 		"""
 		Returns an instance of driver_type
 		"""
-		if instance_name not in CQBConnectionDriver._instances:
-			CQBConnectionDriver._instances[instance_name] = CQBConnectionDriver(driver_type)
+		if instance_name not in CQBConnection._instances:
+			CQBConnection._instances[instance_name] = CQBConnection(driver_type)
 			
-		return CQBConnectionDriver._instances[instance_name]
+		return CQBConnection._instances[instance_name]
 
 	def __init__(self, driver_type = 'mysql'):
 		self.driver_type = driver_type.lower()
@@ -51,7 +51,7 @@ class CQBConnectionDriver():
 		return self.driver.is_connected()
 
 if __name__ == '__main__':
-	c = CQBConnectionDriver.instance('mysql', 'mysql')
+	c = CQBConnection.instance('mysql', 'mysql')
 	c.connect(user='root',passwd='kaizer')
 	c.set_db("youcallmd");
 	print c.query("SELECT * FROM users WHERE id = %s LIMIT 1", 1455)
