@@ -18,7 +18,8 @@ class CQBQuery(wx.App):
 		# load connection module and connect to database
 		try
 			self.connection = CQBConnection.instance(self.mainFrame.GetId(), 'mysql')
-			self.connection.connect()
+			self.connection.connect(host='10.182.227.26', user='youcallmd', passwd='19u8hf9quh')
+			self.connection.set_db('youcallmd')
 			self.controller = CQBController.CQBQueryController(self.mainFrame, self.connection)
 			return True
 		except e
