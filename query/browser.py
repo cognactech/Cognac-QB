@@ -69,9 +69,6 @@ class CQBQueryBrowser(wx.Frame, CQBEvent.CQBQueryEvent):
 		self.queryEditorPanel = wx.Panel(self.splitter, -1, style=wx.SUNKEN_BORDER)
 		self.queryEditor = CQBQueryCtrl(self.queryEditorPanel, -1, name="QueryEditor")
 		
-		self.resultsGrid = CQBResult.CQBQueryResultGrid(self.splitter, style=wx.SUNKEN_BORDER)
-		self.resultsGrid.CreateGrid(50, 9)
-		
 		# move this to results found callback
 		self.splitter.SplitHorizontally(self.queryEditorPanel, self.resultsGrid, 300)
 		
@@ -79,6 +76,21 @@ class CQBQueryBrowser(wx.Frame, CQBEvent.CQBQueryEvent):
 		
 		self.Centre()
 		self.Show(True)
+	
+	def refreshGrid(self, field_names, results):
+		# un split panel destroy and del current resultsGrid
+		self.splitter.UnSplit()
+		self.resultsGrid.Destroy()
+		del self.resultsGrid
+		
+		# build new results grid with data passed
+		self.resultsGrid = CQBResult.CQBQueryResultGrid(self.splitter, field_names, results, style=wx.SUNKEN_BORDER)
+		
+		#resize main frame to its best fit size
+		self.mainFrame.SetSize(self.mainFrame.GetBestSize())
+		
+		# split panel with current query window and new results grid
+		self.splitter.SplitHorizontally(self.splitter.GetWindow1(), self.resultsGrid, 300)
 	
 	def loadQueryDialog(self, e):
 		''' '''

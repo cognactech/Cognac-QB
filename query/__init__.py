@@ -3,16 +3,28 @@
 import wx
 import controller as CQBController
 import browser as CQBBrowser
+import connection as CQBConnection
 
 class CQBQuery(wx.App):
 	''' '''
 	
 	def OnInit(self):
 		''' '''
-		self.mainFrame = CQBBrowser.CQBQueryBrowser(None, title='Cognac Query Browser', size=(800, 600))
+		
+		# build main frame of query application and define it as top window
+		self.mainFrame = CQBBrowser.CQBQueryBrowser(None, title='Cognac Query Browser', size=(400, 400))
 		self.SetTopWindow(self.mainFrame)
-		controller = CQBController.CQBQueryController(self.mainFrame)
-		return True
+		
+		# load connection module and connect to database
+		try
+			self.connection = CQBConnection.instance(self.mainFrame.GetId(), 'mysql')
+			self.connection.connect()
+			self.controller = CQBController.CQBQueryController(self.mainFrame, self.connection)
+			return True
+		except e
+			
+		finally
+			return False
 	
 	def getNewQueryBrowser (self, connection, parent=None):
 		''' '''

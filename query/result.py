@@ -40,8 +40,8 @@ class CQBQueryResult(wx.grid.PyGridTableBase):
 class CQBQueryResultGrid(wx.grid.Grid):
 	''' '''
 	
-	def __init__ (self, *args, **kwargs):
+	def __init__ (self, field_names=(), results=[], *args, **kwargs):
 		super(CQBQueryResultGrid, self).__init__(*args, **kwargs)
-	
+		self.SetTable(CQBQueryResult(field_names, results))
 
 	
