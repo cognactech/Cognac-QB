@@ -40,10 +40,13 @@ class CQBConnection():
 		if not self.is_connected():
 			raise errors.CQBConnectionError("Driver not connected.")
 
-		return self.driver.explain(query_text, replacements)
+		return self.driver.query(query_text, replacements)
 
 	def explain(self, query_text, replacements = ()):
-		if not self.is_conn
+		if not self.is_connected():
+			raise errors.CQBConnectionError("Driver not connected.")
+
+		return self.driver.explain(query_text, replacements)
 
 	def last_query(self):
 		return self.driver.last_query()
