@@ -75,9 +75,10 @@ class CQBQueryResult(wx.grid.PyGridTableBase):
 class CQBQueryResultGrid(wx.grid.Grid):
 	''' '''
 	
-	def __init__ (self, field_names=(), results=[], *args, **kwargs):
-		super(CQBQueryResultGrid, self).__init__(*args, **kwargs)
-		self.SetTable(CQBQueryResult(field_names, results))
+	def __init__ (self, parent, field_names=(), results=[], *args, **kwargs):
+		super(CQBQueryResultGrid, self).__init__(parent, -1, *args, **kwargs)
+		table = CQBQueryResult(field_names, results)
+		self.SetTable(table)
 	
 class CQBQueryCtrl(wx.TextCtrl):
 	''' '''
@@ -114,9 +115,7 @@ class CQBQueryController(wx.EvtHandler):
 		
 		self.parent.Bind(EVT_CQB_QUERY_ERR, self.displayQueryError, self)
 		self.parent.Bind(EVT_CQB_QRY_RFRSH, self.refreshQueryData, self)
-		
-		self.parent.Bind(wx.EVT_QUERY_END_SESSION, query.CQBQuery.onQueryShutdown, self)
-		self.parent.Bind(wx.EVT_END_SESSION, query.CQBQuery.onShutdown, self)
+		self.parent.Bind(EVT_CQB_QRY_RUN, self.runQuery, self)
 	
 	def GetId(self):
 		''' Returns a new id or previosly generated one if already called '''
@@ -128,14 +127,15 @@ class CQBQueryController(wx.EvtHandler):
 	def runQuery(self, e):
 		''' '''
 		
-		try:
-			query = wx.FindWindowByName('QueryEditor', self.splitter).GetValue()
-			data = self.connection.query(query)
-			self.parent.refreshGrid(data[0], data[1])
-		except:
-			pass
-		finally:
-			e.Skip()
+		#try:
+		query = wx.FindWindowByName('QueryEditor', self.parent.splitter)
+		query = query.GetValue()
+		data = self.connection.query(query)
+		self.parent.refreshGrid(data[0], data[1])
+		#except Exception, exc:
+		#	wx.MessageBox(str(exc), "Query Failed", wx.OK | wx.ICON_ERROR)
+		#finally:
+		e.Skip()
 	
 	def displayQueryError(self, e):
 		''' '''
@@ -167,8 +167,8 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		self.buildStatusBar()
 		
 		self.toolbar_items = (
-			(wx.ID_ANY, "Run Query", "Run Query", "./images/run.png", wx.EVT_MENU, self.triggerQueryRun),
-			(wx.ID_ANY, "Stop Query", "Cancel the execution of the current query", "./images/stop.png", wx.EVT_MENU, self.triggerQueryStop),
+			(wx.ID_ANY, "Run Query", "Run Query", "images/run.png", wx.EVT_MENU, self.triggerQueryRun),
+			(wx.ID_ANY, "Stop Query", "Cancel the execution of the current query", "images/stop.png", wx.EVT_MENU, self.triggerQueryStop),
 			(wx.ID_ANY, "Load File", "Load SQL from a file", "images/run.png", wx.EVT_MENU, self.loadQueryDialog),
 		)
 		self.buildToolbar()
@@ -212,26 +212,29 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		
 		self.queryEditorPanel = wx.Panel(self.splitter, -1, style=wx.SUNKEN_BORDER)
 		self.queryEditor = CQBQueryCtrl(self.queryEditorPanel, -1, name="QueryEditor")
+		self.queryEditor.AppendText('SELECT * FROM users LIMIT 0, 1000');
 		
-		# move this to results found callback
-		self.splitter.SplitHorizontally(self.queryEditorPanel, self.resultsGrid, 300)
-		
+		self.splitter.Initialize(self.queryEditorPanel)
 		self.splitter.SetSizer(box)
 		
 		self.Centre()
 		self.Show(True)
 	
+	resultsGrid = None
 	def refreshGrid(self, field_names, results):
+		''' '''
+		
 		# un split panel destroy and del current resultsGrid
-		self.splitter.UnSplit()
-		self.resultsGrid.Destroy()
-		del self.resultsGrid
+		self.splitter.Unsplit()
+		if self.resultsGrid != None:
+			self.resultsGrid.Destroy()
+			del self.resultsGrid
 		
 		# build new results grid with data passed
-		self.resultsGrid = CQBQueryResultGrid(self.splitter, field_names, results, style=wx.SUNKEN_BORDER)
+		self.resultsGrid = CQBQueryResultGrid(self.splitter, field_names=field_names, results=results, style=wx.SUNKEN_BORDER)
 		
 		#resize main frame to its best fit size
-		self.mainFrame.SetSize(self.mainFrame.GetBestSize())
+		self.SetSize(self.GetBestSize())
 		
 		# split panel with current query window and new results grid
 		self.splitter.SplitHorizontally(self.splitter.GetWindow1(), self.resultsGrid, 300)
@@ -259,7 +262,7 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		
 		evt = CQBQueryEventStop(self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
-	
+		
 	def triggerQueryRun(self, e=None):
 		''' Triggers CQBQueryEventRun '''
 		
@@ -297,7 +300,8 @@ class CQBQuery(wx.App):
 		''' '''
 		
 		browser = CQBQueryBrowser(parent, title='Cognac Query Browser', size=(400, 400))
-		CQBController(browser, connection)
+		controller = CQBQueryController(browser, connection)
+		#browser.setController(controller)
 		return browser
 	
 	def onQueryShutdown(self, e):
