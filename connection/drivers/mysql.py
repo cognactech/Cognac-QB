@@ -31,7 +31,7 @@ class CQBConnectionDriver_mysql():
 			raise CQBConnectionErrors.CQBConnectionQueryError(e.args[0], e.args[1])
 
 	def query(self, query_text, replacements = ()):
-		#check for active connection
+		#force tuple
 		if not isinstance(replacements, (list, tuple)):
 			replacements = (replacements)
 
@@ -46,6 +46,41 @@ class CQBConnectionDriver_mysql():
 			self._last_error = e.args[1]
 			self._last_error_number = e.args[0]
 			raise CQBConnectionErrors.CQBConnectionQueryError(e.args[0], e.args[1], str(query_text) % replacements)
+
+		self._last_query = cursor._last_executed
+
+		#execution time
+		execution_time = end_time - start_time
+
+		#build the column names
+		field_names = []
+		for field in cursor.description:
+			field_names.append(field[0])
+
+		results = []
+
+		row = cursor.fetchone()
+		while row is not None:
+			results.append(row)
+			row = cursor.fetchone()
+
+		return (field_names, results, execution_time)
+
+	def explain(self, query_text, replacements = ()):
+		#force tuple
+		if not isinstance(replacements, (list, tuple)):
+			replacements = (replacements)
+
+		cursor = self._connection.cursor()
+
+		try:
+			start_time = time.time()
+			cursor.execute("""EXPLAIN %s""" % str(query_text), replacements)
+			end_time = time.time()
+		except MySQLdb.Error, e:
+			self._last_error = e.args[1]
+			self._last_error_number = e.args[0]
+			raise CQBConnectionErrors.CQBConnectionQueryError(e.args[0], e.args[1], str(quer_text) % replacements)
 
 		self._last_query = cursor._last_executed
 
