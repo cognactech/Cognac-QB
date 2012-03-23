@@ -1,9 +1,9 @@
-import MySQLdb
+import sqlite3
 import time
 #try to import errors
 import connection.errors as CQBConnectionErrors
 
-class CQBConnectionDriver_mysql():
+class CQBConnectionDriver_sqlite():
 	
 	#init variables
 	_connection = None
@@ -16,22 +16,21 @@ class CQBConnectionDriver_mysql():
 
 	def connect(self, **kwargs):
 		try:
-			self._connection = MySQLdb.connect(**kwargs)
-		except MySQLdb.Error, e:
-			self._last_error = e.args[1]
-			self._last_error_number = e.args[0]
-			raise CQBConnectionErrors.CQBConnectionError("Unable to connect to MySQL database.")
+			self._connection = sqlite3.connect(**kwargs)
+		except sqlite3.Error, e:
+			self._last_error = e.args[0]
+			raise CQBConnectionErrors.CQBConnectionError("Unable to connect to SQLite database.")
 
 	def set_db(self, name):
 		try:
-			self._connection.select_db(name)
-		except MySQLdb.Error, e:
-			self._last_error = e.args[1]
-			self._last_error_number = e.args[0]
-			raise CQBConnectionErrors.CQBConnectionQueryError(e.args[0], e.args[1])
+			self._connection = sqlite3.connect(name)
+		except sqlite3.Error, e:
+			self._last_error = e.args[0]
+			self._last_error_number = 0
+			raise CQBConnectionErrors.CQBConnectionError(e.args[0])
 
 	def query(self, query_text, replacements = ()):
-		#force tuple
+		#check for active connection
 		if not isinstance(replacements, (list, tuple)):
 			replacements = (replacements)
 
@@ -42,10 +41,9 @@ class CQBConnectionDriver_mysql():
 			cursor.execute(str(query_text), replacements)
 			end_time = time.time()
 			self._connection.commit()
-		except MySQLdb.Error, e:
-			self._last_error = e.args[1]
-			self._last_error_number = e.args[0]
-			raise CQBConnectionErrors.CQBConnectionQueryError(e.args[0], e.args[1], str(query_text) % replacements)
+		except sqlite3.Error, e:
+			self._last_error = e.args[0]
+			raise CQBConnectionErrors.CQBConnectionQueryError(0, e.args[1], str(query_text) % replacements)
 
 		self._last_query = cursor._last_executed
 
@@ -59,10 +57,8 @@ class CQBConnectionDriver_mysql():
 
 		results = []
 
-		row = cursor.fetchone()
-		while row is not None:
+		for row in cursor:
 			results.append(row)
-			row = cursor.fetchone()
 
 		return (field_names, results, execution_time)
 
@@ -78,13 +74,10 @@ class CQBConnectionDriver_mysql():
 		return self._last_error_number, self._last_error
 
 	def is_connected(self):
+		"""
+		SQLite can't technically disconnect.
+		"""
 		if self._connection is None:
-			return False
-		try:
-			result = self._connection.stat()
-			if result == 'MySQL server has gone away':
-				return False
-		except:
 			return False
 
 		return True
