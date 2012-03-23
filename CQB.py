@@ -20,7 +20,7 @@ class CQB(wx.App):
 			result = wx.MessageBox("You do not have an active connection! Error" + str(exc), "Connection Failed", wx.OK | wx.ICON_ERROR)
 			return False
 		
-		self.mainFrame = query.getNewQueryBrowser(connection=con, parent=None)
+		self.mainFrame = query.CQBQuery.getNewQueryBrowser(connection=con, parent=None)
 		self.SetTopWindow(self.mainFrame)
 		return True
 	
