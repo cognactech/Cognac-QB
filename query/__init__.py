@@ -127,8 +127,9 @@ class CQBQueryController(wx.EvtHandler):
 	
 	def runQuery(self, e):
 		''' '''
+		
 		try:
-			query = self.parent.GetWindow('QueryEditor').GetValue()
+			query = wx.FindWindowByName('QueryEditor', self.splitter).GetValue()
 			data = self.connection.query(query)
 			self.parent.refreshGrid(data[0], data[1])
 		except:
