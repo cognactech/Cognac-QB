@@ -20,8 +20,9 @@ class CQBConnection():
 
 		#try to import the driver
 		try:
-			module_name = "drivers.%s" % self.driver_type
-			__import__(module_name)
+			module_name = "connection.drivers.%s" % self.driver_type
+			__import__("connection.drivers.mysql")#module_name)
+			
 			self.module = sys.modules[module_name]
 
 			cls = getattr(self.module, "CQBConnectionDriver_%s" % self.driver_type)

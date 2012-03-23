@@ -1,6 +1,6 @@
 import MySQLdb
 #try to import errors
-import errors as CQBConnectionErrors
+import connection.errors as CQBConnectionErrors
 
 class CQBConnectionDriver_mysql():
 	
