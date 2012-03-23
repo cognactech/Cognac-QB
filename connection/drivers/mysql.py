@@ -59,7 +59,8 @@ class CQBConnectionDriver_mysql():
 
 		results = []
 
-		while row = cursor.fetchone():
+		row = cursor.fetchone()
+		while row is not None:
 			results.append(row)
 
 		return (field_names, results, execution_time)
