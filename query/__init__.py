@@ -2,39 +2,150 @@
 
 import wx
 import wx.grid
-import browser as CQBBrowser
 
-class CQBQuery(wx.App):
+class CQBQueryEvent(wx.PyCommandEvent):
+	def __init__ (self, evtType, id):
+		super(CQBQueryEvent, self).__init__(evtType, id)
+	
+EVT_CQB_QUERY_ID = wx.NewEventType()
+EVT_CQB_QUERY = wx.PyEventBinder(EVT_CQB_QUERY_ID, 1)
+
+class CQBQueryEventError(CQBQueryEvent):
+	def __init__ (self, id):
+		super(CQBQueryEventError, self).__init__(EVT_CQB_QUERY_ERR_ID, id)
+
+EVT_CQB_QUERY_ERR_ID = wx.NewEventType()
+EVT_CQB_QUERY_ERR = wx.PyEventBinder(EVT_CQB_QUERY_ERR_ID, 1)
+
+class CQBQueryEventRefresh(CQBQueryEvent):
+	def __init__ (self, id):
+		super(CQBQueryEventRefresh, self).__init__(EVT_CQB_QRY_RFRSH_ID, id)
+
+EVT_CQB_QRY_RFRSH_ID = wx.NewEventType()
+EVT_CQB_QRY_RFRSH = wx.PyEventBinder(EVT_CQB_QRY_RFRSH_ID, 1)
+
+class CQBQueryEventRun(CQBQueryEvent):
+	def __init__ (self, id):
+		super(CQBQueryEventRun, self).__init__(EVT_CQB_QRY_RUN_ID, id)
+
+EVT_CQB_QRY_RUN_ID = wx.NewEventType()
+EVT_CQB_QRY_RUN = wx.PyEventBinder(EVT_CQB_QRY_RUN_ID, 1)
+
+class CQBQueryEventStop(CQBQueryEvent):
+	def __init__ (self, id):
+		super(CQBQueryEventStop, self).__init__(EVT_CQB_QRY_STOP_ID, id)
+
+EVT_CQB_QRY_STOP_ID = wx.NewEventType()
+EVT_CQB_QRY_STOP = wx.PyEventBinder(EVT_CQB_QRY_STOP_ID, 1)
+
+class CQBQueryCtrl(wx.TextCtrl):
 	''' '''
-	def __init__(self, *args, **kwards)
-		''' ''' 
-		
-		self.controller = CQBController(connection)
-		
-	def OnInit(self, connection):
+	
+	def __init__ (self, parent, *args, **kwargs):
 		''' '''
 		
-		# build main frame of query application and define it as top window
-		self.mainFrame = CQBQueryBrowser(None, title='Cognac Query Browser', size=(400, 400))
-		self.SetTopWindow(self.mainFrame)
+		#wx.Font(pointSize=12, family=wx.FONTFAMILY_MODERN, style=wx.NORMAL, weight=wx.NORMAL)
+		ctrlStyles = wx.TE_MULTILINE | wx.TE_DONTWRAP | wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB
+		
+		super(CQBQueryCtrl, self).__init__(parent, style=ctrlStyles, *args, **kwargs)
+		
+		self.SetInsertionPoint(0)
+
+class CQBQueryController(wx.EvtHandler):
+	''' '''
 	
-	@staticmethod
-	def getNewQueryBrowser (parent=None, connection):
+	object_id = None
+	
+	def __init__ (self, parent, connection, *args, **kwargs):
 		''' '''
 		
-		browser = CQBQueryBrowser(parent, title='Cognac Query Browser', size=(400, 400))
-		CQBController(browser, connection)
-		return browser
+		super(CQBQueryController, self).__init__(*args, **kwargs)
+		
+		self.connection = connection
+		self.parent = parent
+		
+		if not self.connection.is_connected():
+			 result = wx.MessageBox("You do not have an active connection!", "Connection Failed", wx.OK | wx.ICON_ERROR)
+			 self.parent.Close()
+			 self.parent.Destroy()
+			 self.Close()
+			 self.Destroy()
+		
+		self.parent.Bind(EVT_CQB_QUERY_ERR, self.displayQueryError, self)
+		self.parent.Bind(EVT_CQB_QRY_RFRSH, self.refreshQueryData, self)
+		
+		self.parent.Bind(wx.EVT_QUERY_END_SESSION, query.CQBQuery.onQueryShutdown, self)
+		self.parent.Bind(wx.EVT_END_SESSION, query.CQBQuery.onShutdown, self)
 	
-	def onQueryShutdown(self, e):
-		''' Called when a EVT_QUERY_END_SESSION event is triggered '''
+	def GetId(self):
+		''' Returns a new id or previosly generated one if already called '''
+		
+		if self.object_id == None:
+			self.object_id = wx.ID_ANY
+		return self.object_id
+	
+	def runQuery(self, e):
+		''' '''
+		try:
+			query = self.parent.GetWindow('QueryEditor').GetValue()
+			data = self.connection.query(query)
+			self.parent.refreshGrid(data[0], data[1])
+		except:
+			pass
+		finally:
+			e.Skip()
+	
+	def displayQueryError(self, e):
+		''' '''
 		
 		e.Skip()
 	
-	def onShutdown(self, e):
-		''' Called when a EVT_END_SESSION event is triggered'''
+	def refreshQueryData(self, e):
+		''' '''
 		
 		e.Skip()
+	
+
+class CQBQueryResult(wx.grid.PyGridTableBase):
+	'''	'''
+	
+	def __init__ (self, field_names, results, *args, **kwargs):
+		super(CQBQueryResult, self).__init__(*args, **kwargs)
+		self.field_names = field_names
+		self.results = results
+	
+	def GetNumberRows(self):
+		return len(self.results)
+	
+	def GetNumberCols(self):
+		return len(self.results[0])
+	
+	def IsEmptyCell(self, row, col):
+		row = self.results[row]
+		if row[col]:
+			return False
+		return True
+	
+	def GetValue(self, row, col):
+		row = self.results[row]
+		return row[col]
+	
+	def SetValue(self, row, col, value):
+		pass
+	
+	def GetColLabelValue(self, col):
+		if self.field_names:
+			return self.field_names[col]
+	
+	def GetRowLabelValue(self, row):
+		return row
+	
+class CQBQueryResultGrid(wx.grid.Grid):
+	''' '''
+	
+	def __init__ (self, field_names=(), results=[], *args, **kwargs):
+		super(CQBQueryResultGrid, self).__init__(*args, **kwargs)
+		self.SetTable(CQBQueryResult(field_names, results))
 	
 
 class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
@@ -166,155 +277,44 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		
 		evt = CQBQueryEventRefresh(self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
-	
-class CQBQueryCtrl(wx.TextCtrl):
-	''' '''
-	
-	def __init__ (self, parent, *args, **kwargs):
-		''' '''
-		
-		#wx.Font(pointSize=12, family=wx.FONTFAMILY_MODERN, style=wx.NORMAL, weight=wx.NORMAL)
-		ctrlStyles = wx.TE_MULTILINE | wx.TE_DONTWRAP | wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB
-		
-		super(CQBQueryCtrl, self).__init__(parent, style=ctrlStyles, *args, **kwargs)
-		
-		self.SetInsertionPoint(0)
 
-class CQBQueryController(wx.EvtHandler):
+class CQBQuery(wx.App):
 	''' '''
+	def __init__(self, *args, **kwards):
+		''' ''' 
+		
+		self.controller = CQBController(connection)
 	
-	object_id = None
-	
-	def __init__ (self, parent, connection, *args, **kwargs):
+	def OnInit(self, connection):
 		''' '''
 		
-		super(CQBQueryController, self).__init__(*args, **kwargs)
-		
-		self.connection = connection
-		self.parent = parent
-		
-		if not self.connection.is_connected():
-			 result = wx.MessageBox("You do not have an active connection!", "Connection Failed", wx.OK | wx.ICON_ERROR)
-			 self.parent.Close()
-			 self.parent.Destroy()
-			 self.Close()
-			 self.Destroy()
-		
-		self.parent.Bind(EVT_CQB_QUERY_ERR, self.displayQueryError, self)
-		self.parent.Bind(EVT_CQB_QRY_RFRSH, self.refreshQueryData, self)
-		
-		self.parent.Bind(wx.EVT_QUERY_END_SESSION, query.CQBQuery.onQueryShutdown, self)
-		self.parent.Bind(wx.EVT_END_SESSION, query.CQBQuery.onShutdown, self)
+		# build main frame of query application and define it as top window
+		self.mainFrame = CQBQueryBrowser(None, title='Cognac Query Browser', size=(400, 400))
+		self.SetTopWindow(self.mainFrame)
 	
-	def GetId(self):
-		''' Returns a new id or previosly generated one if already called '''
-		
-		if self.object_id == None:
-			self.object_id = wx.ID_ANY
-		return self.object_id
-	
-	def runQuery(self, e):
+	@staticmethod
+	def getNewQueryBrowser (connection, parent=None):
 		''' '''
-		try:
-			query = self.parent.GetWindow('QueryEditor').GetValue()
-			data = self.connection.query(query)
-			self.parent.refreshGrid(data[0], data[1])
-		except:
-			pass
-		finally:
-			e.Skip()
+		
+		browser = CQBQueryBrowser(parent, title='Cognac Query Browser', size=(400, 400))
+		CQBController(browser, connection)
+		return browser
 	
-	def displayQueryError(self, e):
-		''' '''
+	def onQueryShutdown(self, e):
+		''' Called when a EVT_QUERY_END_SESSION event is triggered '''
 		
 		e.Skip()
 	
-	def refreshQueryData(self, e):
-		''' '''
+	def onShutdown(self, e):
+		''' Called when a EVT_END_SESSION event is triggered'''
 		
 		e.Skip()
 	
-
-class CQBQueryEvent(wx.PyCommandEvent):
-	def __init__ (self, evtType, id):
-		super(CQBQueryEvent, self).__init__(evtType, id)
-	
-EVT_CQB_QUERY_ID = wx.NewEventType()
-EVT_CQB_QUERY = wx.PyEventBinder(EVT_CQB_QUERY_ID, 1)
-
-class CQBQueryEventError(CQBQueryEvent):
-	def __init__ (self, id):
-		super(CQBQueryEventError, self).__init__(EVT_CQB_QUERY_ERR_ID, id)
-
-EVT_CQB_QUERY_ERR_ID = wx.NewEventType()
-EVT_CQB_QUERY_ERR = wx.PyEventBinder(EVT_CQB_QUERY_ERR_ID, 1)
-
-class CQBQueryEventRefresh(CQBQueryEvent):
-	def __init__ (self, id):
-		super(CQBQueryEventRefresh, self).__init__(EVT_CQB_QRY_RFRSH_ID, id)
-
-EVT_CQB_QRY_RFRSH_ID = wx.NewEventType()
-EVT_CQB_QRY_RFRSH = wx.PyEventBinder(EVT_CQB_QRY_RFRSH_ID, 1)
-
-class CQBQueryEventRun(CQBQueryEvent):
-	def __init__ (self, id):
-		super(CQBQueryEventRun, self).__init__(EVT_CQB_QRY_RUN_ID, id)
-
-EVT_CQB_QRY_RUN_ID = wx.NewEventType()
-EVT_CQB_QRY_RUN = wx.PyEventBinder(EVT_CQB_QRY_RUN_ID, 1)
-
-class CQBQueryEventStop(CQBQueryEvent):
-	def __init__ (self, id):
-		super(CQBQueryEventStop, self).__init__(EVT_CQB_QRY_STOP_ID, id)
-
-EVT_CQB_QRY_STOP_ID = wx.NewEventType()
-EVT_CQB_QRY_STOP = wx.PyEventBinder(EVT_CQB_QRY_STOP_ID, 1)
-
-class CQBQueryResult(wx.grid.PyGridTableBase):
-	'''	'''
-	
-	def __init__ (self, field_names, results, *args, **kwargs):
-		super(CQBQueryResult, self).__init__(*args, **kwargs)
-		self.field_names = field_names
-		self.results = results
-	
-	def GetNumberRows(self):
-		return len(self.results)
-	
-	def GetNumberCols(self):
-		return len(self.results[0])
-	
-	def IsEmptyCell(self, row, col):
-		row = self.results[row]
-		if row[col]:
-			return False
-		return True
-	
-	def GetValue(self, row, col):
-		row = self.results[row]
-		return row[col]
-	
-	def SetValue(self, row, col, value):
-		pass
-	
-	def GetColLabelValue(self, col):
-		if self.field_names:
-			return self.field_names[col]
-	
-	def GetRowLabelValue(self, row):
-		return row
-	
-class CQBQueryResultGrid(wx.grid.Grid):
-	''' '''
-	
-	def __init__ (self, field_names=(), results=[], *args, **kwargs):
-		super(CQBQueryResultGrid, self).__init__(*args, **kwargs)
-		self.SetTable(CQBQueryResult(field_names, results))
 	
 if __name__ == '__main__':
 	import connection
-	connection = CQBConnection.instance(wx.ID_ANY, 'mysql')
-	connection.connect(host='10.182.227.26', user='youcallmd', passwd='19u8hf9quh')
-	connection.set_db('youcallmd')
-	app = CQBQuery(connection)
+	con = connection.CQBConnection.instance(wx.ID_ANY, 'mysql')
+	con.connect(host='10.182.227.26', user='youcallmd', passwd='19u8hf9quh')
+	con.set_db('youcallmd')
+	app = CQBQuery(con)
 	app.MainLoop()
