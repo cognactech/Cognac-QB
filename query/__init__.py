@@ -112,9 +112,6 @@ class CQBQueryThread(threading.Thread):
 		
 		try:
 			query = self.parent.queryEditor.GetValue()
-			
-			print query
-			
 			data = self.parent.parent.con.query(query)
 			
 			evt = CQBQueryEventRefresh(EVT_CQB_QRY_RFRSH_ID, field_names=data[0], data=data[1], execution_time=data[2])
