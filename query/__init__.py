@@ -2,24 +2,29 @@
 
 import wx
 import wx.grid
+import threading
 
 class CQBQueryEvent(wx.PyCommandEvent):
 	def __init__ (self, evtType, id):
 		super(CQBQueryEvent, self).__init__(evtType, id)
 	
-EVT_CQB_QUERY_ID = wx.NewEventType()
-EVT_CQB_QUERY = wx.PyEventBinder(EVT_CQB_QUERY_ID, 1)
+EVT_CQB_QRY_ID = wx.NewEventType()
+EVT_CQB_QRY = wx.PyEventBinder(EVT_CQB_QRY_ID, 1)
 
 class CQBQueryEventError(CQBQueryEvent):
-	def __init__ (self, id):
-		super(CQBQueryEventError, self).__init__(EVT_CQB_QUERY_ERR_ID, id)
+	def __init__ (self, id, message):
+		super(CQBQueryEventError, self).__init__(EVT_CQB_QRY_ERR_ID, id)
+		self.message = message
 
-EVT_CQB_QUERY_ERR_ID = wx.NewEventType()
-EVT_CQB_QUERY_ERR = wx.PyEventBinder(EVT_CQB_QUERY_ERR_ID, 1)
+EVT_CQB_QRY_ERR_ID = wx.NewEventType()
+EVT_CQB_QRY_ERR = wx.PyEventBinder(EVT_CQB_QRY_ERR_ID, 1)
 
 class CQBQueryEventRefresh(CQBQueryEvent):
-	def __init__ (self, id):
+	def __init__ (self, id, field_names=[], data=[], execution_time=None):
 		super(CQBQueryEventRefresh, self).__init__(EVT_CQB_QRY_RFRSH_ID, id)
+		self.field_names = field_names
+		self.data = data
+		self.execution_time = execution_time
 
 EVT_CQB_QRY_RFRSH_ID = wx.NewEventType()
 EVT_CQB_QRY_RFRSH = wx.PyEventBinder(EVT_CQB_QRY_RFRSH_ID, 1)
@@ -93,29 +98,53 @@ class CQBQueryCtrl(wx.TextCtrl):
 		
 		self.SetInsertionPoint(0)
 
+class CQBQueryThread(threading.Thread):
+	''' '''
+	
+	def __init__(self, parent, *args, **kwargs):
+		''' '''
+		
+		super(CQBQueryThread, self).__init__(*args, **kwargs)
+		self.parent = parent
+
+	def run(self):
+		""" Overrides Thread.run. Don't call this directly its called internally when you call Thread.start(). """
+		
+		try:
+			query = self.parent.queryEditor.GetValue()
+			
+			print query
+			
+			data = self.parent.parent.con.query(query)
+			
+			evt = CQBQueryEventRefresh(EVT_CQB_QRY_RFRSH_ID, field_names=data[0], data=data[1], execution_time=data[2])
+		except Exception, exc:
+			evt = CQBQueryEventError(EVT_CQB_QRY_ERR_ID, str(exc))
+		
+		wx.PostEvent(self.parent, evt)
+		
+	
 class CQBQueryController(wx.EvtHandler):
 	''' '''
 	
 	object_id = None
 	
-	def __init__ (self, parent, connection, *args, **kwargs):
+	def __init__ (self, parent, *args, **kwargs):
 		''' '''
 		
 		super(CQBQueryController, self).__init__(*args, **kwargs)
 		
-		self.connection = connection
 		self.parent = parent
 		
-		if not self.connection.is_connected():
-			 result = wx.MessageBox("You do not have an active connection!", "Connection Failed", wx.OK | wx.ICON_ERROR)
-			 self.parent.Close()
-			 self.parent.Destroy()
-			 self.Close()
-			 self.Destroy()
-		
-		self.parent.Bind(EVT_CQB_QUERY_ERR, self.displayQueryError, self)
+		self.parent.Bind(EVT_CQB_QRY_ERR, self.displayQueryError, self)
 		self.parent.Bind(EVT_CQB_QRY_RFRSH, self.refreshQueryData, self)
 		self.parent.Bind(EVT_CQB_QRY_RUN, self.runQuery, self)
+	
+	@staticmethod
+	def index(*args, **kwargs):
+		browser = CQBQueryBrowser(*args, **kwargs)
+		CQBQueryController(browser)
+		return browser
 	
 	def GetId(self):
 		''' Returns a new id or previosly generated one if already called '''
@@ -127,28 +156,26 @@ class CQBQueryController(wx.EvtHandler):
 	def runQuery(self, e):
 		''' '''
 		
-		#try:
-		query = wx.FindWindowByName('QueryEditor', self.parent.splitter)
-		query = query.GetValue()
-		data = self.connection.query(query)
-		self.parent.refreshGrid(data[0], data[1])
-		#except Exception, exc:
-		#	wx.MessageBox(str(exc), "Query Failed", wx.OK | wx.ICON_ERROR)
-		#finally:
-		e.Skip()
+		self.parent.clearGrid()
+		queryThread = CQBQueryThread(self.parent)
+		queryThread.start()
 	
 	def displayQueryError(self, e):
 		''' '''
+		
+		result = wx.MessageBox(e.message, "Query Failed", wx.OK | wx.ICON_ERROR)
 		
 		e.Skip()
 	
 	def refreshQueryData(self, e):
 		''' '''
 		
+		self.parent.refreshGrid(e.field_names, e.data, e.execution_time)
+		
 		e.Skip()
 	
 
-class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
+class CQBQueryBrowser(wx.Panel):
 	''' '''
 	
 	def __init__ (self, parent, *args, **kwargs):
@@ -156,54 +183,12 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		
 		super(CQBQueryBrowser, self).__init__(parent, *args, **kwargs)
 		
-		self.menus = {
-			'&File': (
-				(wx.ID_ANY, '&Run Query\tCtrl+R', 'Run Query', wx.EVT_MENU, self.triggerQueryRun),
-				(wx.ID_ANY, '&Refresh\tShift+Ctrl+R', 'Refresh Results', wx.EVT_MENU, self.triggerRefresh),
-				(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser', wx.EVT_MENU, self.closeQueryBrowser)
-			)
-		}
-		self.buildMenubar()
-		self.buildStatusBar()
-		
-		self.toolbar_items = (
-			(wx.ID_ANY, "Run Query", "Run Query", "images/run.png", wx.EVT_MENU, self.triggerQueryRun),
-			(wx.ID_ANY, "Stop Query", "Cancel the execution of the current query", "images/stop.png", wx.EVT_MENU, self.triggerQueryStop),
-			(wx.ID_ANY, "Load File", "Load SQL from a file", "images/run.png", wx.EVT_MENU, self.loadQueryDialog),
-		)
-		self.buildToolbar()
-		
-		self.buildFrame()
+		self.parent = parent
+		self.initLayout()
+		self.Centre()
+		self.Show(True)
 	
-	def buildMenubar(self):
-		''' Builds menu using [self.menus] '''
-		
-		menubar = wx.MenuBar()
-		
-		for key, menu in self.menus.items():
-			Menu = wx.Menu()
-			for id, command, label, event_id, event_callback in menu:
-				item = Menu.Append(id, command, label) 
-				self.Bind(event_id, event_callback, item)
-			menubar.Append(Menu, key)
-		
-		self.SetMenuBar(menubar)
-	
-	def buildToolbar(self):
-		''' '''
-
-		self.toolbar = self.CreateToolBar()
-		for item in self.toolbar_items:
-			menuitem = self.toolbar.AddSimpleTool(-1, wx.Bitmap(item[3]), item[1], item[2])
-			self.Bind(item[4], item[5], menuitem)
-		self.toolbar.Realize()
-
-	def buildStatusBar(self):
-		''' '''
-
-		self.statusBar = self.CreateStatusBar()
-	
-	def buildFrame(self):
+	def initLayout(self):
 		''' '''
 		
 		box = wx.BoxSizer()
@@ -211,17 +196,27 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		self.splitter = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
 		
 		self.queryEditorPanel = wx.Panel(self.splitter, -1, style=wx.SUNKEN_BORDER)
-		self.queryEditor = CQBQueryCtrl(self.queryEditorPanel, -1, name="QueryEditor")
+		
+		self.queryEditor = CQBQueryCtrl(self.queryEditorPanel, -1)
 		self.queryEditor.AppendText('SELECT * FROM users LIMIT 0, 1000');
 		
 		self.splitter.Initialize(self.queryEditorPanel)
-		self.splitter.SetSizer(box)
 		
-		self.Centre()
-		self.Show(True)
+		box.Add(self.splitter, 1, wx.EXPAND)
+		
+		self.SetSizer(box)
 	
 	resultsGrid = None
-	def refreshGrid(self, field_names, results):
+	def refreshGrid(self, field_names, results, execution_time):
+		''' '''
+		
+		# build new results grid with data passed
+		self.resultsGrid = CQBQueryResultGrid(self.splitter, field_names=field_names, results=results, style=wx.SUNKEN_BORDER)
+		
+		# split panel with current query window and new results grid
+		self.splitter.SplitHorizontally(self.splitter.GetWindow1(), self.resultsGrid)
+	
+	def clearGrid(self):
 		''' '''
 		
 		# un split panel destroy and del current resultsGrid
@@ -229,15 +224,6 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		if self.resultsGrid != None:
 			self.resultsGrid.Destroy()
 			del self.resultsGrid
-		
-		# build new results grid with data passed
-		self.resultsGrid = CQBQueryResultGrid(self.splitter, field_names=field_names, results=results, style=wx.SUNKEN_BORDER)
-		
-		#resize main frame to its best fit size
-		self.SetSize(self.GetBestSize())
-		
-		# split panel with current query window and new results grid
-		self.splitter.SplitHorizontally(self.splitter.GetWindow1(), self.resultsGrid, 300)
 	
 	def loadQueryDialog(self, e):
 		''' '''
@@ -250,7 +236,7 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		loadQueryDialog.Destroy()
 		e.Skip()
 	
-	def closeQueryBrowser(self, e):
+	def quitApplication (self, e):
 		'''  '''
 
 		self.triggerQueryStop()
@@ -280,45 +266,4 @@ class CQBQueryBrowser(wx.Frame, CQBQueryEvent):
 		
 		evt = CQBQueryEventRefresh(self.GetId())
 		self.GetEventHandler().ProcessEvent(evt)
-
-class CQBQuery(wx.App):
-	''' '''
-	def __init__(self, *args, **kwards):
-		''' ''' 
-		
-		self.controller = CQBController(connection)
 	
-	def OnInit(self, connection):
-		''' '''
-		
-		# build main frame of query application and define it as top window
-		self.mainFrame = CQBQueryBrowser(None, title='Cognac Query Browser', size=(400, 400))
-		self.SetTopWindow(self.mainFrame)
-	
-	@staticmethod
-	def getNewQueryBrowser (connection, parent=None):
-		''' '''
-		
-		browser = CQBQueryBrowser(parent, title='Cognac Query Browser', size=(400, 400))
-		controller = CQBQueryController(browser, connection)
-		#browser.setController(controller)
-		return browser
-	
-	def onQueryShutdown(self, e):
-		''' Called when a EVT_QUERY_END_SESSION event is triggered '''
-		
-		e.Skip()
-	
-	def onShutdown(self, e):
-		''' Called when a EVT_END_SESSION event is triggered'''
-		
-		e.Skip()
-	
-	
-if __name__ == '__main__':
-	import connection
-	con = connection.CQBConnection.instance(wx.ID_ANY, 'mysql')
-	con.connect(host='10.182.227.26', user='youcallmd', passwd='19u8hf9quh')
-	con.set_db('youcallmd')
-	app = CQBQuery(con)
-	app.MainLoop()
