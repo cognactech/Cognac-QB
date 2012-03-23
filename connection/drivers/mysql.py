@@ -57,7 +57,12 @@ class CQBConnectionDriver_mysql():
 		for field in cursor.description:
 			field_names.append(field[0])
 
-		return (field_names, cursor.fetchall(), execution_time)
+		results = []
+
+		while row = cursor.fetchone():
+			results.append(row)
+
+		return (field_names, results, execution_time)
 
 	def last_query(self):
 		return self._last_query
