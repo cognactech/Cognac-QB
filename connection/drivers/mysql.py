@@ -1,4 +1,5 @@
 import MySQLdb
+import time
 #try to import errors
 import connection.errors as CQBConnectionErrors
 
@@ -37,7 +38,10 @@ class CQBConnectionDriver_mysql():
 		cursor = self._connection.cursor()
 
 		try:
+			start_time = time.time()
 			cursor.execute(str(query_text), replacements)
+			end_time = time.time()
+			self._connection.commit()
 		except MySQLdb.Error, e:
 			self._last_error = e.args[1]
 			self._last_error_number = e.args[0]
@@ -45,12 +49,15 @@ class CQBConnectionDriver_mysql():
 
 		self._last_query = cursor._last_executed
 
+		#execution time
+		execution_time = end_time - start_time
+
 		#build the column names
 		field_names = []
 		for field in cursor.description:
 			field_names.append(field[0])
 
-		return (field_names, cursor.fetchall())
+		return (field_names, cursor.fetchall(), execution_time)
 
 	def last_query(self):
 		return self._last_query
