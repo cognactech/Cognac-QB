@@ -75,10 +75,10 @@ class Query(wx.Panel):
 	@staticmethod
 	def instance(parent, id):
 		''' Returns a new instance or previosly generated one if found '''
-		if id in self.instances:
-			return self.instances[id]
-		self.instances[id] = Query(parent, id)
-		return self.instances[id]
+		if id in Query.instances:
+			return Query.instances[id]
+		Query.instances[id] = Query(parent, id)
+		return Query.instances[id]
 
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''	

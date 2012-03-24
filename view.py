@@ -1,3 +1,5 @@
+import wx
+
 class CQBMenu(wx.Menu):
 	''' '''
 	

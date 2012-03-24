@@ -15,7 +15,7 @@ class ResultEvent(wx.PyCommandEvent):
 		super(ResultEvent, self).__init__(evtType, id)
 
 EVT_QRE_QRY_ID = wx.NewEventType()
-EVT_QRE_QRY = wx.PyEventBinder(EVT_CQB_QRY_ID, 1)
+EVT_QRE_QRY = wx.PyEventBinder(EVT_QRE_QRY_ID, 1)
 
 class ResultEventLoad(ResultEvent):
 	''' '''
@@ -60,10 +60,10 @@ class Result(wx.Panel):
 	@staticmethod
 	def instance(parent, id):
 		''' Returns a new instance or previosly generated one if found '''
-		if id in self.instances:
-			return self.instances[id]
-		self.instances[id] = Query(parent, id)
-		return self.instances[id]
+		if id in Result.instances:
+			return Result.instances[id]
+		Result.instances[id] = Query(parent, id)
+		return Result.instances[id]
 
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''
@@ -81,5 +81,5 @@ class Result(wx.Panel):
 		''' '''
 		self.grid.ClearGrid()
 		table = ResultTable(data[0], data[1])
-		self.grid.SetTable(table))
+		self.grid.SetTable(table)
 		self.ForceRefresh()

@@ -1,3 +1,5 @@
+import wx, wx.grid
+
 class ResultTable(wx.grid.PyGridTableBase):
 	'''	'''
 	

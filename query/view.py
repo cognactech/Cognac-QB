@@ -1,11 +1,13 @@
-class QueryMenu(CQBMenu)
+import wx
+
+class QueryMenu():
 	''' '''
 	
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''
 		super(ResultMenu, self).__init__(parent, id, *args, **kwargs)
 
-class QueryToolbar(CQBToolbar)
+class QueryToolbar():
 	''' '''
 	
 	def __init__ (self, parent, id, *args, **kwargs):

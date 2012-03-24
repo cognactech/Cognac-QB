@@ -1,4 +1,6 @@
 import connection
+from connection import errors
+import sqlite3
 
 class CQBHelper(object):
 	''' '''
@@ -7,10 +9,10 @@ class CQBHelper(object):
 	@staticmethod
 	def instance(profile, con_params):
 		''' Returns a new instance or previosly generated one if found '''
-		if profile in self.instances:
-			return self.instances[profile]
-		self.instances[profile] = CQBHelper(profile, con_params)
-		return self.instances[profile]
+		if profile in CQBHelper.instances:
+			return CQBHelper.instances[profile]
+		CQBHelper.instances[profile] = CQBHelper(profile, con_params)
+		return CQBHelper.instances[profile]
 
 	def __init__(self, profile, con_params):
 		''' '''
@@ -20,9 +22,9 @@ class CQBHelper(object):
 		self.user = con_params['user']
 		self.passwd = con_params['passwd']
 		self.port = con_params['port']
-		self.driver = con_params['driver']
+		self.driver = 'mysql'
 
-		self.con = connection.Connection.instance(self.profile, self.driver)
+		self.con = connection.CQBConnection.instance(self.profile, self.driver)
 
 	def reconnect (self):
 		''' '''
@@ -41,7 +43,7 @@ class CQBHelper(object):
 	def tables (self, db_name=None):
 		''' '''	
 		if not self.con.is_connected():
-			if db_name != None
+			if db_name != None:
 				self.use(db_name)
 			results = self.con.query('SHOW TABLES')
 			return results
@@ -52,3 +54,24 @@ class CQBHelper(object):
 			results = self.con.query('SHOW COLUMNS FROM %s' % table_name)
 			return results
 		return False
+
+class CQBDatabase(object):
+	''' '''
+	
+	instances = {}
+	@staticmethod
+	def instance(profile='default'):
+		''' Returns a new instance or previosly generated one if found '''
+		if profile in CQBDatabase.instances:
+			return CQBDatabase.instances[profile]
+		CQBDatabase.instances[profile] = CQBDatabase(profile)
+		return CQBDatabase.instances[profile]
+
+	def __init__(self, profile):
+		''' '''
+		conn = sqlite3.connect('/Users/ncurtis/CognacQB/qcb-data')
+		self.cursor = conn.cursor()
+
+	def profiles(self):
+		self.cursor.execute('SELECT * FROM connections')
+		return self.cursor

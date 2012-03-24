@@ -1,11 +1,13 @@
-class ResultMenu(CQBMenu)
+import wx, wx.grid
+
+class ResultMenu():
 	''' '''
 	
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''
 		super(ResultMenu, self).__init__(parent, id, *args, **kwargs)
 
-class ResultToolbar(CQBToolbar)
+class ResultToolbar():
 	''' '''
 	
 	def __init__ (self, parent, id, *args, **kwargs):

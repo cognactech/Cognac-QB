@@ -12,10 +12,10 @@ class Browser(wx.Panel):
 	@staticmethod
 	def instance(parent, id):
 		''' Returns a new instance or previosly generated one if found '''
-		if id in self.instances:
-			return self.instances[id]
-		self.instances[id] = Query(parent, id)
-		return self.instances[id]
+		if id in Browser.instances:
+			return Browser.instances[id]
+		Browser.instances[id] = Query(parent, id)
+		return Browser.instances[id]
 
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''	

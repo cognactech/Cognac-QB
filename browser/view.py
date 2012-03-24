@@ -1,3 +1,19 @@
+import wx
+
+class BrowserMenu():
+	''' '''
+	
+	def __init__ (self, parent, id, *args, **kwargs):
+		''' '''
+		super(BrowserMenu, self).__init__(parent, id, *args, **kwargs)
+
+class BrowserToolbar():
+	''' '''
+	
+	def __init__ (self, parent, id, *args, **kwargs):
+		''' '''
+		super(BrowserToolbar, self).__init__(parent, id, *args, **kwargs)
+
 class BrowserTree(wx.TreeCtrl):
 	''' '''
 	

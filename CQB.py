@@ -2,10 +2,7 @@
 
 import sys, wx
 
-import connection
-from connection import errors
-
-from cqb import database, helper
+from cqb import CQBHelper, CQBDatabase, connection
 
 import view
 import query, browser, result
@@ -19,14 +16,17 @@ class CQBData(object):
 class CQBFrame(wx.Frame):
 	''' '''
 	
-	def __init__ (self, parent, id, con_params=[], *args, **kwargs):
+	def __init__ (self, parent, id, con_params={}, *args, **kwargs):
 		''' '''
 		super(CQBFrame, self).__init__(parent, id, *args, **kwargs)
 
 		if con_params == None or len(con_params) <= 0:
-			result = self.loadFrameConnection()
-			con_params = []
-		self.helper = helper.CQBHelper(con_params)
+			con_params = CQB.loadProfile()
+			if con_params == False:
+				self.Close()
+				return
+
+		self.helper = CQBHelper.instance(con_params['name'], con_params)
 
 		# initialize panels that will be needed to complete window
 		self.query = query.Query.instance(self, wx.ID_ANY)
@@ -34,9 +34,9 @@ class CQBFrame(wx.Frame):
 		self.result = result.Result.instance(self, wx.ID_ANY)
 
 		# hide query results until we have some
-		self.queryResult.Show(False)
+		self.result.Show(False)
 
-		self.buildWindow():
+		self.buildWindow()
 		self.Show(True)
 
 	def buildWindow(self):
@@ -49,35 +49,70 @@ class CQBFrame(wx.Frame):
 		self.sizer.Add(self.result, 0, wx.EXPAND)
 		self.SetSizer(self.sizer)
 
-	def loadFrameConnection():
-		
-
-
 class CQB(wx.App):
 	''' '''
 
 	@staticmethod
-	def getNewFrame(id):
+	def getNewFrame(id, con_params={}):
 		''' '''
-		return CQBFrame(None, id)
-
-	def __init__ (*args, **kwargs):
-		''' '''
-		super(CQB, self).__init__(*args, **kwargs)
-
-		self.database = database.CQBDatabase()
+		return CQBFrame(None, id, con_params=con_params)
 
 	def OnInit(self):
 		''' '''
-		self.window = self.getNewFrame(self.con)
-		self.SetTopWindow(self.getNewFrame())	
-		return True
+		self.database = CQBDatabase.instance()
 
-	def quitApplication(self, e):
-		'''  '''
-		self.Close()
-		e.Skip()
+		try:
+			profiles = list(self.database.profiles())
+			dialog = wx.SingleChoiceDialog(None, "Select a Profile", "Cognac QueryBrowser", [x[5] for x in profiles])
+			while True:
+				if dialog.ShowModal() == wx.ID_OK:
+					# get selected profile and destroy dialog
+					profile = profiles[dialog.GetSelection()]
+					break
+				else:
+					return False
+
+			# pass connection to new instance of CQBFrame
+			dialog.Destroy()
+			con_params = {'host': profile[1], 'user': profile[2], 'passwd': profile[3], 'port': profile[4], 'name': profile[5]}
+
+			frame = CQB.getNewFrame(wx.ID_ANY, con_params=con_params)
+			self.SetTopWindow(frame)
+
+		except connection.errors.CQBConnectionError, exc:
+			wx.MessageBox(str(exc), "Initial Connection Failed", wx.OK | wx.ICON_ERROR)
+			return False
+		
+		except Exception, exc:
+			wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
+			return False
+
+		return False
+
+	@staticmethod
+	def loadProfile():
+		''' '''
+		database = CQBDatabase.instance()
+		try:
+			profiles = database.profiles()
+			dialog = wx.SingleChoiceDialog(None, "Select a Profile", "Cognac QueryBrowser", [x[5] for x in profiles])
+			while True:
+				if dialog.ShowModal() == wx.ID_OK:
+					# get selected profile and destroy dialog
+					profile = profiles[dialog.GetSelection()]
+					dialog.Destroy()
+
+					# return profile connection paramters
+					return {'host': profile[1], 'user': profile[2], 'passwd': profile[3], 'port': profile[4], 'name': profile[5]}
+
+		except connection.errors.CQBConnectionError, exc:
+			pass#wx.MessageBox(str(exc), "New Connection Failed", wx.OK | wx.ICON_ERROR)
+			return False
+		
+		except Exception, exc:
+			wx.MessageBox(str(exc), "Load Profile Error", wx.OK | wx.ICON_ERROR)
+			return False
 
 if __name__ == '__main__':
-	app = CQB(0)       # Create an instance of the application class
-	app.MainLoop()     # Tell it to start processing events
+	app = CQB(0)
+	app.MainLoop()
