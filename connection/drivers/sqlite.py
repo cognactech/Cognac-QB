@@ -1,7 +1,10 @@
-import sqlite3
-import time
-#try to import errors
 import connection.errors as CQBConnectionErrors
+#try to import sqlite3
+try:
+	import sqlite3
+except:
+	raise CQBConnectionErrors.CQBConnectionError("Unable to load sqlite3 module. Please install sqlite3.")
+import time
 
 class CQBConnectionDriver_sqlite():
 	

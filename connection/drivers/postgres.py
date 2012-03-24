@@ -1,9 +1,9 @@
 import connection.errors as CQBConnectionErrors
 #try to import MySQL
 try:
-	import MySQLdb
+	import pgdb
 except:
-	raise CQBConnectionErrors.CQBConnectionError("Unable to load MySQLdb module. Please install MySQLdb.")
+	raise CQBConnectionErrors.CQBConnectionError("Unable to load pgdb module. Please install pgdb.")
 import time
 
 class CQBConnectionDriver_mysql():
@@ -11,7 +11,6 @@ class CQBConnectionDriver_mysql():
 	#init variables
 	_connection = None
 	_last_error = None
-	_last_error_number = None
 	_last_query = None
 
 	def __init__(self):
@@ -19,19 +18,17 @@ class CQBConnectionDriver_mysql():
 
 	def connect(self, **kwargs):
 		try:
-			self._connection = MySQLdb.connect(**kwargs)
-		except MySQLdb.Error, e:
-			self._last_error = e.args[1]
-			self._last_error_number = e.args[0]
-			raise CQBConnectionErrors.CQBConnectionError("Unable to connect to MySQL database.")
+			self._connection = pgdb.connect(**kwargs)
+		except pgdb.Error, e:
+			self._last_error = e.message
+			raise CQBConnectionErrors.CQBConnectionError(e.message)
 
 	def set_db(self, name):
 		try:
 			self._connection.select_db(name)
-		except MySQLdb.Error, e:
-			self._last_error = e.args[1]
-			self._last_error_number = e.args[0]
-			raise CQBConnectionErrors.CQBConnectionQueryError(e.args[0], e.args[1])
+		except pgdb.Error, e:
+			self._last_error = e.message
+			raise CQBConnectionErrors.CQBConnectionQueryError(0, e.message)
 
 	def query(self, query_text, replacements = ()):
 		#force tuple
@@ -45,10 +42,9 @@ class CQBConnectionDriver_mysql():
 			cursor.execute(str(query_text), replacements)
 			end_time = time.time()
 			self._connection.commit()
-		except MySQLdb.Error, e:
-			self._last_error = e.args[1]
-			self._last_error_number = e.args[0]
-			raise CQBConnectionErrors.CQBConnectionQueryError(e.args[0], e.args[1], str(query_text) % replacements)
+		except pgdb.Error, e:
+			self._last_error = e.message
+			raise CQBConnectionErrors.CQBConnectionQueryError(0, e.message)
 
 		self._last_query = cursor._last_executed
 
