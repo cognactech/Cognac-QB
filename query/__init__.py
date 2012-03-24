@@ -65,7 +65,10 @@ class CQBQueryResult(wx.grid.PyGridTableBase):
 	
 	def GetValue(self, row, col):
 		row = self.results[row]
-		return row[col]
+		if row[col] == None:
+			return '[NULL]'
+		else:
+			return row[col]
 	
 	def SetValue(self, row, col, value):
 		pass
@@ -75,15 +78,28 @@ class CQBQueryResult(wx.grid.PyGridTableBase):
 			return self.field_names[col]
 	
 	def GetRowLabelValue(self, row):
-		return row
+		return ' '
 	
 class CQBQueryResultGrid(wx.grid.Grid):
 	''' '''
 	
 	def __init__ (self, parent, field_names=(), results=[], *args, **kwargs):
 		super(CQBQueryResultGrid, self).__init__(parent, -1, *args, **kwargs)
+		
+		box = wx.BoxSizer()
+		box.Add(self, 1, wx.EXPAND)
+		self.SetSizer(box)
+		
 		table = CQBQueryResult(field_names, results)
 		self.SetTable(table)
+		
+		self.SetRowLabelSize(20)
+		
+		self.SetColLabelAlignment(0, 1)
+		#self.AutoSizeColumns(setAsMin=True)
+		
+		self.SetDefaultCellOverflow(False)
+		
 	
 class CQBQueryCtrl(wx.TextCtrl):
 	''' '''
@@ -188,7 +204,7 @@ class CQBQueryBrowser(wx.Panel):
 	def initLayout(self):
 		''' '''
 		
-		box = wx.BoxSizer()
+		self.sizer = wx.BoxSizer()
 		
 		self.splitter = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
 		
@@ -199,9 +215,9 @@ class CQBQueryBrowser(wx.Panel):
 		
 		self.splitter.Initialize(self.queryEditorPanel)
 		
-		box.Add(self.splitter, 1, wx.EXPAND)
+		self.sizer.Add(self.splitter, 1, wx.EXPAND)
 		
-		self.SetSizer(box)
+		self.SetSizer(self.sizer)
 	
 	resultsGrid = None
 	def refreshGrid(self, field_names, results, execution_time):

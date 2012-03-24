@@ -16,23 +16,95 @@ class CQB(wx.App):
 		self.SetTopWindow(self.mainFrame)
 		return True
 
+class CQBData(object):
+	def __init__(self, data={}):
+		self.data = data
+
+class CQBDBrowser(wx.TreeCtrl):
+	''' '''
+	
+	def __init__(self, parent, *args, **kwargs):
+		''' '''
 		
+		super(CQBDBrowser, self).__init__(parent, *args, **kwargs)
+		
+		self.parent = parent
+		self.__collapsing = False
+		
+		self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
+		self.Bind(wx.EVT_TREE_ITEM_COLLAPSING, self.OnCollapseItem)
+	
+	databases = []
+	def initDBList(self, connection_name, databases):
+		''' '''
+		
+		self.databases = databases
+		
+		root = self.AddRoot(connection_name)
+		self.SetItemData(root, data=wx.TreeItemData(CQBData(data={'database': False, 'table': False})))
+		
+		data = CQBData(data={'database': True, 'table': False})
+		for db in self.databases:
+			if db != None:
+				item = self.AppendItem(root, db, data=wx.TreeItemData(data))
+				self.SetItemHasChildren(item, True)
+		
+		self.SetItemHasChildren(root, True)
+		
+
+	def OnExpandItem(self, e):
+		''' '''
+		
+		try:
+			data = self.GetPyData(e.GetItem())
+			
+			if data.data['database'] == False and data.data['table'] == False:
+				print 'pass'
+				
+			elif data.data['database'] == True:
+				self.parent.useDatabase('youcallmd')
+				tables = self.parent.getTables()
+		
+				data = CQBData(data={'database': False, 'table': True})
+				for table in tables[1]:
+					item = self.AppendItem(e.GetItem(), table[0], data=wx.TreeItemData(data))
+					self.SetItemHasChildren(item, True)
+	
+			elif data.data['database'] == False:
+				print 'open table'
+		
+		except Exception, exc:
+			result = wx.MessageBox(str(exc), "Database Error", wx.OK | wx.ICON_ERROR)
+		finally:
+			e.Skip()
+		
+
+	def OnCollapseItem(self, e):
+		''' '''
+		
+		if self.__collapsing:
+			e.Veto()
+		else:
+			self.__collapsing = True
+			pass
+			self.__collapsing = False
+
 class CQBWindow(wx.Frame):
 	''' '''
 	
-	def __init__ (self, parent, *args, **kwargs):
+	def __init__(self, parent, *args, **kwargs):
 		''' '''
 		
 		super(CQBWindow, self).__init__(parent, size=(800, 600), *args, **kwargs)
 		
 		box = wx.BoxSizer()
 		
-		self.dbBrowserPanel = wx.Panel(self, -1, style=wx.SUNKEN_BORDER)
+		self.dbBrowserPanel = CQBDBrowser(self, -1, style=wx.SUNKEN_BORDER)
 		
 		self.queryEditorPanel = query.CQBQueryController.index(self, -1, style=wx.SUNKEN_BORDER)
 		
-		box.Add(self.dbBrowserPanel, 2, wx.EXPAND)
-		box.Add(self.queryEditorPanel, 8, wx.EXPAND)
+		box.Add(self.dbBrowserPanel, 1, wx.EXPAND)
+		box.Add(self.queryEditorPanel, 4, wx.EXPAND)
 		
 		self.SetSizer(box)
 		
@@ -71,14 +143,22 @@ class CQBWindow(wx.Frame):
 			if dialog.ShowModal() == wx.ID_OK:
 				aprofile = dialog.GetSelection()
 				
+				# create instance of new connection
 				self.con = connection.CQBConnection.instance(self.profiles[aprofile][0], 'mysql')
 				self.con.connect(host=self.profiles[aprofile][1], user=self.profiles[aprofile][2], passwd=self.profiles[aprofile][3])
-				self.con.set_db('youcallmd')
 				
-				dialog.Destroy()
-			
+				# list databases that are available
+				results = self.con.query('SHOW DATABASES')
+				
+				profile_dbs = [db[0] for db in results[1]]
+				
+				self.dbBrowserPanel.initDBList(self.profiles[aprofile][5], profile_dbs)
+				del results
+
 			else:
-				dialog.Destroy()
+				self.Close()
+			
+			dialog.Destroy()
 			
 		except errors.CQBConnectionError, exc:
 			result = wx.MessageBox(str(exc), "Connection Failed", wx.OK | wx.ICON_ERROR)
@@ -86,6 +166,16 @@ class CQBWindow(wx.Frame):
 		except Exception, exc:
 			result = wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
 	
+	def useDatabase(self, db_name):
+		''' '''
+		self.con.set_db(db_name)
+		
+	def getTables(self):
+		''' '''
+		
+		results = self.con.query('SHOW TABLES')
+		return results
+		
 	def buildMenubar(self):
 		''' Builds menu using [self.menus] '''
 
@@ -113,13 +203,13 @@ class CQBWindow(wx.Frame):
 			menuitem = self.toolbar.AddSimpleTool(-1, wx.Bitmap(item[3]), item[1], item[2])
 			self.Bind(item[4], item[5], menuitem)
 		self.toolbar.Realize()
-
+	
 	def buildStatusBar(self):
 		''' '''
 
 		self.statusBar = self.CreateStatusBar()
 	
-	def quitApplication (self, e):
+	def quitApplication(self, e):
 		''' '''
 		
 		self.Close()
