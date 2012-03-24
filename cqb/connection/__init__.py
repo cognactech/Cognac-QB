@@ -1,5 +1,8 @@
-import errors
 import sys
+import errors
+import drivers.mysql as driver
+#import drivers.postgres
+#import drivers.sqlite
 
 class CQBConnection():
 
@@ -17,13 +20,9 @@ class CQBConnection():
 
 	def __init__(self, driver_type = 'mysql'):
 		self.driver_type = driver_type.lower()
-
 		#try to import the driver
 		try:
-			self.module = sys.modules[self.driver_type]
-
-			cls = getattr(self.module, "CQBConnectionDriver_%s" % self.driver_type)
-			self.driver = cls()
+			cls = getattr(driver, "CQBConnectionDriver_%s" % self.driver_type)
 		except:
 			raise errors.CQBConnectionError("Driver %s not found" % self.driver_type)
 

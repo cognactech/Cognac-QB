@@ -1,5 +1,4 @@
 import connection
-from connection import errors
 import sqlite3
 
 class CQBHelper(object):

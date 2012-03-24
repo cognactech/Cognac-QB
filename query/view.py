@@ -1,27 +1,26 @@
-import wx
+import wx, wx.stc
 
 class QueryMenu():
 	''' '''
 	
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''
-		super(ResultMenu, self).__init__(parent, id, *args, **kwargs)
+		super(QueryMenu, self).__init__(parent, id, *args, **kwargs)
 
 class QueryToolbar():
 	''' '''
 	
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''
-		super(ResultToolbar, self).__init__(parent, id, *args, **kwargs)
+		super(QueryToolbar, self).__init__(parent, id, *args, **kwargs)
 
-class QueryEditorTextCtrl(wx.TextCtrl):
+class QueryEditorTextCtrl(wx.stc.StyledTextCtrl):
 	''' '''
 	
 	def __init__ (self, parent, *args, **kwargs):
 		''' '''
-		#wx.Font(pointSize=12, family=wx.FONTFAMILY_MODERN, style=wx.NORMAL, weight=wx.NORMAL)
-		ctrlStyles = wx.TE_MULTILINE | wx.TE_DONTWRAP | wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB		
-		super(QueryEditorTextCtrl, self).__init__(parent, style=ctrlStyles, *args, **kwargs)
+		super(QueryEditorTextCtrl, self).__init__(parent, *args, **kwargs)
+		self.SetMargins(0, 50)
 		self.SetInsertionPoint(0)
 
 class QueryEditor(wx.Panel):
@@ -29,13 +28,13 @@ class QueryEditor(wx.Panel):
 	
 	def __init__ (self, parent, *args, **kwargs):
 		''' '''
-		super(CQBQueryBrowser, self).__init__(parent, *args, **kwargs)
+		super(QueryEditor, self).__init__(parent, *args, **kwargs)
 		
 		self.queryEditor = QueryEditorTextCtrl(self, -1)
 		
 		self.sizer = wx.BoxSizer()
 		self.sizer.Add(self.queryEditor, 1, wx.EXPAND)
-		self.SetSizer(self)
+		self.SetSizer(self.sizer)
 	
 	def loadQueryDialog(self, e):
 		''' '''

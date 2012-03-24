@@ -1,4 +1,3 @@
-import connection.errors as CQBConnectionErrors
 #try to import MySQL
 try:
 	import pgdb

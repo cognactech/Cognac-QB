@@ -2,6 +2,9 @@
 
 import sys, wx
 
+from wx.py.shell import ShellFrame
+from wx.py.filling import FillingFrame
+
 from cqb import CQBHelper, CQBDatabase, connection
 
 import view
@@ -28,26 +31,43 @@ class CQBFrame(wx.Frame):
 
 		self.helper = CQBHelper.instance(con_params['name'], con_params)
 
-		# initialize panels that will be needed to complete window
-		self.query = query.Query.instance(self, wx.ID_ANY)
-		self.browser = browser.Browser.instance(self, wx.ID_ANY)
-		self.result = result.Result.instance(self, wx.ID_ANY)
-
-		# hide query results until we have some
-		self.result.Show(False)
-
 		self.buildWindow()
 		self.Show(True)
+
+		self.OnShell(None)
+		self.OnFilling(None)
 
 	def buildWindow(self):
 		''' '''
 		self.splitter = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
-		self.splitter.SplitVertically(self.queryEditor)
+
+		# initialize panels that will be needed to complete window
+		self.query = query.Query.instance(self.splitter, wx.ID_ANY)
+		self.browser = browser.Browser.instance(self.splitter, wx.ID_ANY)
+		self.result = result.Result.instance(self, wx.ID_ANY)
+
+		# hide query results until we have some
+		self.result.Show(False)
 		
-		self.sizer = wx.BoxSizer()
+		self.splitter.SplitVertically(self.browser, self.query)
+		
+		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		
 		self.sizer.Add(self.splitter, 1, wx.EXPAND)
-		self.sizer.Add(self.result, 0, wx.EXPAND)
+		self.sizer.Add(self.result, 1, wx.EXPAND)
+		
 		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
+
+	def OnShell(self, event):
+		''' '''
+		frame = ShellFrame(parent=self)
+		frame.Show()
+
+	def OnFilling(self, event):
+		''' '''
+		frame = FillingFrame(parent=self)
+		frame.Show()
 
 class CQB(wx.App):
 	''' '''
@@ -78,6 +98,7 @@ class CQB(wx.App):
 
 			frame = CQB.getNewFrame(wx.ID_ANY, con_params=con_params)
 			self.SetTopWindow(frame)
+			return True
 
 		except connection.errors.CQBConnectionError, exc:
 			wx.MessageBox(str(exc), "Initial Connection Failed", wx.OK | wx.ICON_ERROR)
@@ -94,7 +115,7 @@ class CQB(wx.App):
 		''' '''
 		database = CQBDatabase.instance()
 		try:
-			profiles = database.profiles()
+			profiles = list(database.profiles())
 			dialog = wx.SingleChoiceDialog(None, "Select a Profile", "Cognac QueryBrowser", [x[5] for x in profiles])
 			while True:
 				if dialog.ShowModal() == wx.ID_OK:
@@ -115,4 +136,5 @@ class CQB(wx.App):
 
 if __name__ == '__main__':
 	app = CQB(0)
+	app.SetAppDisplayName('Cognac Query Browser')
 	app.MainLoop()

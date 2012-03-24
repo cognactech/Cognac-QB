@@ -5,7 +5,7 @@ class ResultTable(wx.grid.PyGridTableBase):
 	
 	def __init__ (self, field_names, results, *args, **kwargs):
 		''' '''
-		super(Result, self).__init__(*args, **kwargs)
+		super(ResultTable, self).__init__(*args, **kwargs)
 		self.field_names = field_names
 		self.results = results
 	
@@ -20,14 +20,14 @@ class ResultTable(wx.grid.PyGridTableBase):
 	def IsEmptyCell(self, row, col):
 		''' '''
 		row = self.results[row]
-		if row[col]:
+		if col in row:
 			return False
 		return True
 	
 	def GetValue(self, row, col):
 		''' '''
 		row = self.results[row]
-		if row[col] == None:
+		if col in row:
 			return '[NULL]'
 		else:
 			return row[col]

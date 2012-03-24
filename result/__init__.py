@@ -62,20 +62,23 @@ class Result(wx.Panel):
 		''' Returns a new instance or previosly generated one if found '''
 		if id in Result.instances:
 			return Result.instances[id]
-		Result.instances[id] = Query(parent, id)
+		Result.instances[id] = Result(parent, id)
 		return Result.instances[id]
 
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''
-		super(Result, self).__init__(parent, -1, *args, **kwargs)
+		super(Result, self).__init__(parent, id, *args, **kwargs)
 		
 		Publisher().subscribe(self.processResult, "ResultEventLoad")
 
-		self.grid = view.ResultGrid(self, field_names=field_names, results=results)
-
+		table = model.ResultTable(field_names=[''], results=[['']])
+		
+		self.grid = view.ResultGrid(self, wx.ID_ANY, table=table)
+		
 		self.sizer = wx.BoxSizer()
 		self.sizer.Add(self.grid, 1, wx.EXPAND)
 		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
 
 	def processResult(self, data):
 		''' '''

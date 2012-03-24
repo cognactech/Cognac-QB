@@ -1,4 +1,3 @@
-import connection.errors as CQBConnectionErrors
 #try to import sqlite3
 try:
 	import sqlite3

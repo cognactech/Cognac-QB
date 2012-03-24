@@ -17,18 +17,17 @@ class ResultToolbar():
 class ResultGrid(wx.grid.Grid):
 	''' '''
 	
-	def __init__ (self, parent, id, field_names=(), results=[], *args, **kwargs):
+	def __init__ (self, parent, id, table=None, *args, **kwargs):
 		''' '''
 		super(ResultGrid, self).__init__(parent, id, *args, **kwargs)
 		
-		table = ResultTable(field_names, results)
 		self.SetTable(table)
 
 		box = wx.BoxSizer()
 		box.Add(self, 1, wx.EXPAND)
 		self.SetSizer(box)
 		
-		self.HideRowLabels(True)
+		self.HideRowLabels()
 		
 		self.SetColLabelAlignment(0, 1)
 		self.AutoSizeColumns(setAsMin=False)

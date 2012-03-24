@@ -20,7 +20,11 @@ class CQBMenu(wx.Menu):
 			'&File': (
 				(wx.ID_ANY, '&Run Query\tCtrl+R', 'Run Query', wx.EVT_MENU, self.queryEditorPanel.triggerQueryRun),
 				(wx.ID_ANY, '&Refresh\tShift+Ctrl+R', 'Refresh Results', wx.EVT_MENU, self.queryEditorPanel.triggerRefresh),
-				(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser', wx.EVT_MENU, [self.quitApplication, self.queryEditorPanel.quitApplication])
+				(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser', wx.EVT_MENU, self.quitApplication, self.queryEditorPanel.quitApplication)
+			),
+			"&Debug": (
+				(wx.ID_ANY, "&Namespace Viewer/tCtrl+Opt+N", "Open Namespace Viewer", wx.EVT_MENU, self.OnShell)
+				(wx.ID_ANY, "&wxPython\tCtrl+Opt+W Shell", "Open Python Shell", wx.EVT_MENU, self.OnFilling)
 			)
 		}
 
@@ -37,7 +41,7 @@ class CQBMenu(wx.Menu):
 			menubar.Append(Menu, key)
 		self.SetMenuBar(menubar)
 
-class CQBToolbar():
+class CQBToolbar(wx.Menu):
 	''' '''
 	
 	instances = {}

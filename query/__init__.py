@@ -82,9 +82,9 @@ class Query(wx.Panel):
 
 	def __init__ (self, parent, id, *args, **kwargs):
 		''' '''	
-		super(Query, self).__init__(*args, **kwargs)
+		super(Query, self).__init__(parent, id, *args, **kwargs)
 		
-		self.Bind(EVT_CQB_QRY_RUN, self.runQuery, self)
+		self.Bind(EVT_QEE_RUN, self.runQuery, self)
 		Publisher().subscribe(self.queryEventError, "QueryEventError")
 
 		self.queryEditor = view.QueryEditor(self)
@@ -92,6 +92,7 @@ class Query(wx.Panel):
 		self.sizer = wx.BoxSizer()
 		self.sizer.Add(self.queryEditor, 1, wx.EXPAND)
 		self.SetSizer(self.sizer)
+		self.sizer.Fit(self)
 	
 	def runQuery(self, e):
 		''' '''
