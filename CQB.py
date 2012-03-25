@@ -10,12 +10,6 @@ from cqb import CQBHelper, CQBDatabase, connection
 import view
 import query, browser, result
 
-class CQBData(object):
-	''' '''
-	def __init__(self, data={}):
-		''' '''
-		self.data = data
-
 class CQBFrame(wx.Frame):
 	''' '''
 	
@@ -33,7 +27,8 @@ class CQBFrame(wx.Frame):
 		
 		self.buildWindow()
 		
-		menu = view.CQBMenu(frame=self)
+		self.menu = view.CQBMenu(frame=self)
+		self.toolbar = view.CQBToolbar().load(self)
 
 		self.Show(True)
 
@@ -44,7 +39,6 @@ class CQBFrame(wx.Frame):
 		self.bottom = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
 		
 		self.window.Initialize(self.top)
-		#self.window.SplitHorizontally(self.top, self.bottom, -300)
 
 		self.buildWindowTop()
 		self.buildWindowBottom()
@@ -59,7 +53,7 @@ class CQBFrame(wx.Frame):
 		self.topSplitter = wx.SplitterWindow(self.top, -1, style=wx.SP_LIVE_UPDATE)
 		self.query = query.Query.instance(self.topSplitter, wx.ID_ANY, style=wx.BORDER_SUNKEN, frame=self)
 		self.browser = browser.Browser.instance(self.topSplitter, wx.ID_ANY, style=wx.BORDER_SUNKEN, frame=self)
-		self.topSplitter.SplitVertically(self.browser, self.query, 200)
+		self.topSplitter.SplitVertically(self.browser, self.query, 230)
 
 		self.topSizer = wx.BoxSizer()
 		self.topSizer.Add(self.topSplitter, 1, wx.EXPAND)
@@ -136,9 +130,9 @@ class CQB(wx.App):
 			wx.MessageBox(str(exc), "Initial Connection Failed", wx.OK | wx.ICON_ERROR)
 			return False
 		
-		except Exception, exc:
-			wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
-			return False
+		#except Exception, exc:
+		#	wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
+		#	return False
 
 		return False
 

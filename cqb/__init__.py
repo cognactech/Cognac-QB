@@ -16,6 +16,7 @@ class CQBHelper(object):
 	def __init__(self, id, con_params):
 		''' '''
 		self.id = int(id)
+		self.name = con_params['name']
 		self.host = con_params['host']
 		self.user = con_params['user']
 		self.passwd = con_params['passwd']
@@ -53,18 +54,31 @@ class CQBHelper(object):
 				return True
 		return False
 		
-	def databases(self, db_name=None):
+	def db_table_tree(self):
+		''' '''
+		tree = {}
+		results = self.databases()
+		for database in results[1]:
+			tables = []
+			tresults = self.tables(database[0])
+			for table in tresults[1]:
+				tables.append(table[0])
+			tree[database[0]] = tables
+		return tree
+
+	def databases(self):
 		''' '''	
 		if self.con.is_connected() != True:
 			self.con.connect(host=self.host, user=self.user, passwd=self.passwd, port=self.port)
 		if self.con.is_connected() == True:
 			results = self.con.query('SHOW DATABASES')
 			return results
-
 		return False
 
 	def tables(self, db_name=None):
 		''' '''	
+		if db_name != None:
+			self.use(db_name)
 		if self.con.is_connected() != True:
 			self.con.connect(host=self.host, user=self.user, passwd=self.passwd, port=self.port)
 		if self.con.is_connected() == True:

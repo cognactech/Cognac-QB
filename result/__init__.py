@@ -71,14 +71,16 @@ class Result(wx.Panel):
 		
 		self.frame = frame
 		
+		self.SetBackgroundColour(wx.Colour(0,0,0))
+
 		Publisher().subscribe(self.processResult, "ResultEventLoad")
 
 		table = model.ResultTable(field_names=[''], results=[['']])
 		
 		self.grid = view.ResultGrid(self, wx.ID_ANY, table=table)
 		
-		self.sizer = wx.BoxSizer()
-		self.sizer.Add(self.grid, 1, wx.EXPAND)
+		self.sizer = wx.GridSizer()
+		self.sizer.Add(self.grid, 1, wx.EXPAND|wx.ALL, 10)
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 

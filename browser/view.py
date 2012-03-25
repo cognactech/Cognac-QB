@@ -1,4 +1,11 @@
 import wx
+import wx.dataview as dv
+
+class CQBData(object):
+	''' '''
+	def __init__(self, data={}):
+		''' '''
+		self.data = data
 
 class BrowserMenu():
 	''' '''
@@ -7,14 +14,7 @@ class BrowserMenu():
 		''' '''
 		super(BrowserMenu, self).__init__(parent, id, *args, **kwargs)
 
-class BrowserToolbar():
-	''' '''
-	
-	def __init__ (self, parent, id, *args, **kwargs):
-		''' '''
-		super(BrowserToolbar, self).__init__(parent, id, *args, **kwargs)
-
-class BrowserTree(wx.TreeCtrl):
+class BrowserTree(dv.DataViewTreeCtrl):
 	''' '''
 	
 	def __init__(self, parent, databases=(), *args, **kwargs):
@@ -22,44 +22,21 @@ class BrowserTree(wx.TreeCtrl):
 		super(BrowserTree, self).__init__(parent, *args, **kwargs)
 		
 		self.__collapsing = False
+
 		self.databases = databases
-		
-		#self.SetBackgroundColour(wx.Colour(176,205,212))
-		
-		self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
-		self.Bind(wx.EVT_TREE_ITEM_COLLAPSING, self.OnCollapseItem)
 
-	def OnExpandItem(self, e):
-		''' '''
-		try:
-			data = self.GetPyData(e.GetItem())
-			
-			if data.data['database'] == False and data.data['table'] == False:
-				print 'pass'
-				
-			elif data.data['database'] == True:
-				self.parent.useDatabase('youcallmd')
-				tables = self.parent.getTables()
-		
-				data = CQBData(data={'database': False, 'table': True})
-				for table in tables[1]:
-					item = self.AppendItem(e.GetItem(), table[0], data=wx.TreeItemData(data))
-					self.SetItemHasChildren(item, True)
-	
-			elif data.data['database'] == False:
-				print 'open table'
-		
-		except Exception, exc:
-			result = wx.MessageBox(str(exc), "Database Error", wx.OK | wx.ICON_ERROR)
-		finally:
-			e.Skip()
+	def build(self, profile, tree):
 
-	def OnCollapseItem(self, e):
-		''' '''
-		
-		if self.__collapsing:
-			e.Veto()
-		else:
-			self.__collapsing = True
-			pass
-			self.__collapsing = False
+		isz = (16,16)
+		il = wx.ImageList(*isz)
+		fldridx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER,      wx.ART_OTHER, isz))
+		fldropenidx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER_OPEN, wx.ART_OTHER, isz))
+		fileidx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
+		self.SetImageList(il)
+
+		self.root = self.AppendContainer(dv.NullDataViewItem, profile, fldridx, fldropenidx)
+
+		for d, t in tree.items():
+			parent = self.AppendContainer(self.root, d, fldridx, fldropenidx)
+			for i in t:
+				self.AppendItem(parent, i, fileidx, fileidx)

@@ -86,20 +86,25 @@ class Query(wx.Panel):
 		super(Query, self).__init__(parent, id, *args, **kwargs)
 		
 		self.frame = frame
-
+		self.SetBackgroundColour(wx.Colour(0,0,0))
+		
 		self.Bind(EVT_QEE_RUN, self.runQuery, self)
 		Publisher().subscribe(self.queryEventError, "QueryEventError")
 
 		self.queryEditor = view.QueryEditor(self, wx.ID_ANY)
 
-		self.sizer = wx.BoxSizer()
-		self.sizer.Add(self.queryEditor, 1, wx.EXPAND)
+		self.sizer = wx.GridSizer()
+		self.sizer.Add(self.queryEditor, 1, wx.EXPAND|wx.ALL, 10)
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 	
 	def runQuery(self, e):
 		''' '''
 		queryThread = QueryThread(self.frame, self.queryEditor.editorCtrl.GetValue())
+		e.Skip()
+
+	def cancelQuery(self, e):
+		''' '''
 		e.Skip()
 	
 	def queryEventError(self, exc):

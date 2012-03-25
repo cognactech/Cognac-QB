@@ -21,28 +21,15 @@ class Browser(wx.Panel):
 		super(Browser, self).__init__(parent, id, *args, **kwargs)
 		
 		self.frame = frame
-		
+		self.SetBackgroundColour(wx.Colour(0,0,0))
+
 		dbs = self.frame.helper.databases()
 
-		self.tree = view.BrowserTree(self, databases=dbs)
+		self.tree = view.BrowserTree(self, databases=dbs[1])
+
+		self.tree.build(self.frame.helper.name, self.frame.helper.db_table_tree())
 
 		self.sizer = wx.BoxSizer()
 		self.sizer.Add(self.tree, 1, wx.EXPAND)
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
-
-	databases = []
-	def initDBList(self, databases):
-		''' '''
-		self.databases = databases
-		
-		root = self.AddRoot(connection_name)
-		self.SetItemData(root, data=wx.TreeItemData(CQBData(data={'database': False, 'table': False})))
-		
-		data = CQBData(data={'database': True, 'table': False})
-		for db in self.databases:
-			if db != None:
-				item = self.AppendItem(root, db, data=wx.TreeItemData(data))
-				self.SetItemHasChildren(item, True)
-		
-		self.SetItemHasChildren(root, True)

@@ -44,30 +44,22 @@ class CQBMenu(wx.MenuBar):
 			self.Append(Menu, key)
 		frame.SetMenuBar(self)
 
-class CQBToolbar(wx.ToolBar):
+class CQBToolbar():
 	''' '''
 	
-	instances = {}
 	@staticmethod
-	def instance(parent, id):
-		''' Returns a new instance or previosly generated one if found '''
-		if id in self.instances:
-			return self.instances[id]
-		self.instances[id] = Query(parent, id)
-		return self.instances[id]
-
-	def __init__ (self, parent, id, *args, **kwargs):
-		''' '''
-		super(CQBMenu, self).__init__(parent, id, *args, **kwargs)
-		
-		self.toolbar_items = (
-			(wx.ID_ANY, "Run Query", "Run Query", "images/run.png", wx.EVT_MENU, self.queryEditorPanel.triggerQueryRun),
-			(wx.ID_ANY, "Stop Query", "Cancel the execution of the current query", "images/stop.png", wx.EVT_MENU, self.queryEditorPanel.triggerQueryStop),
-			(wx.ID_ANY, "Load File", "Load SQL from a file", "images/run.png", wx.EVT_MENU, self.queryEditorPanel.loadQueryDialog),
+	def load(parent, more_items=()):
+		toolbar_items = (
+			(wx.ID_ANY, "Run Query", "Run Query", "images/run.png", wx.EVT_MENU, parent.query.runQuery),
+			(wx.ID_ANY, "Stop Query", "Cancel the execution of the current query", "images/stop.png", wx.EVT_MENU, parent.query.cancelQuery)
 		)
 
-		self.toolbar = self.CreateToolBar()
-		for item in self.toolbar_items:
-			menuitem = self.toolbar.AddSimpleTool(-1, wx.Bitmap(item[3]), item[1], item[2])
-			self.Bind(item[4], item[5], menuitem)
-		self.toolbar.Realize()
+		toolbar_items = toolbar_items + more_items
+
+		toolbar = parent.CreateToolBar()
+		for item in toolbar_items:
+			menuitem = toolbar.AddSimpleTool(-1, wx.Bitmap(item[3]), item[1], item[2])
+			parent.Bind(item[4], item[5], menuitem)
+		toolbar.Realize()
+
+		return toolbar

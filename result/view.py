@@ -20,8 +20,6 @@ class ResultGrid(wx.grid.Grid):
 	def __init__ (self, parent, id, table=None, *args, **kwargs):
 		''' '''
 		super(ResultGrid, self).__init__(parent, id, *args, **kwargs)
-		
-		#self.SetBackgroundColour(wx.Colour(255,246,231))
 
 		self.SetTable(table)
 		
