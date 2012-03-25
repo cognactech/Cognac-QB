@@ -30,6 +30,8 @@ class CQBFrame(wx.Frame):
 		self.menu = view.CQBMenu(frame=self)
 		self.toolbar = view.CQBToolbar().load(self)
 
+		self.statusbar = self.CreateStatusBar()
+
 		self.Show(True)
 
 	def buildWindow(self):
@@ -43,10 +45,11 @@ class CQBFrame(wx.Frame):
 		self.buildWindowTop()
 		self.buildWindowBottom()
 
-	def showResults(self, execution_time):
+	def showResults(self, query, rows, execution_time):
 		self.bottom.Show(True)
 		self.result.Show(True)
 		self.window.SplitHorizontally(self.top, self.bottom, 0)
+		self.statusbar.SetFields([query, '%s records' % rows, '%s secs elapsed' % execution_time])
 
 	def buildWindowTop(self):
 		''' '''

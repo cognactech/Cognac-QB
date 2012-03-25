@@ -1,11 +1,20 @@
 import wx, wx.grid
+import wx.dataview as dv
 
-class ResultTable(wx.grid.PyGridTableBase):
+class ResultListModel():
+	''' '''
+	
+	def __init__ (self, *args, **kwargs):
+		''' '''
+		pass
+		#super(ResultListModel, self).__init__(*args, **kwargs)
+
+class ResultGridTable(wx.grid.PyGridTableBase):
 	'''	'''
 	
 	def __init__ (self, field_names, results, *args, **kwargs):
 		''' '''
-		super(ResultTable, self).__init__(*args, **kwargs)
+		super(ResultGridTable, self).__init__(*args, **kwargs)
 		self.field_names = field_names
 		self.results = results
 	

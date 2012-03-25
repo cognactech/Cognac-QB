@@ -73,14 +73,9 @@ class Result(wx.Panel):
 		
 		self.SetBackgroundColour(wx.Colour(0,0,0))
 
-		Publisher().subscribe(self.processResult, "ResultEventLoad")
+		Publisher().subscribe(self.processResultGrid, "ResultEventLoad")
 
-		table = model.ResultTable(field_names=[''], results=[['']])
-		
-		self.grid = view.ResultGrid(self, wx.ID_ANY, table=table)
-		
 		self.sizer = wx.GridSizer()
-		self.sizer.Add(self.grid, 1, wx.EXPAND|wx.ALL, 10)
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 
@@ -90,10 +85,27 @@ class Result(wx.Panel):
 		results = data.data[1]
 		execution_time = data.data[2]
 
-		self.grid.ClearGrid()
+		self.grid = view.ResultList(self, wx.ID_ANY, field_names=field_names, results=results)
 
-		table = model.ResultTable(field_names, results)
-		self.grid.SetTable(table)
-		self.grid.ForceRefresh()
+		self.sizer.Add(self.grid, 1, wx.EXPAND|wx.ALL, 10)
 
 		self.frame.showResults(execution_time)
+
+	def processResultGrid(self, data):
+		''' '''
+		field_names = data.data[0]
+		results = data.data[1]
+		execution_time = data.data[2]
+		query = data.data[3]
+
+		table = model.ResultGridTable(field_names=field_names, results=results)
+
+		try:
+			self.grid.ClearGrid()
+			self.grid.SetTable(table)
+			self.grid.ForceRefresh()
+		except:
+			self.grid = view.ResultGrid(self, wx.ID_ANY, table=table)
+			self.sizer.Add(self.grid, 1, wx.EXPAND|wx.ALL, 10)
+
+		self.frame.showResults(query, len(results), execution_time)

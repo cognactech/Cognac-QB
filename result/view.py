@@ -1,4 +1,5 @@
 import wx, wx.grid
+import wx.dataview as dv
 
 class ResultMenu():
 	''' '''
@@ -28,3 +29,17 @@ class ResultGrid(wx.grid.Grid):
 		self.SetColLabelAlignment(0, 1)
 		#self.AutoSizeColumns(setAsMin=True)
 		self.SetDefaultCellOverflow(False)
+
+class ResultList(dv.DataViewListCtrl):
+	''' '''
+	
+	def __init__ (self, parent, id, field_names=(''), results=((''), ), *args, **kwargs):
+		''' '''
+		super(ResultList, self).__init__(parent, id, *args, **kwargs)
+
+		for field in field_names:
+			self.AppendTextColumn(field)
+
+		for result in results:
+			self.AppendItem(result)
+		
