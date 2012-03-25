@@ -30,7 +30,7 @@ EVT_QEE_RUN = wx.PyEventBinder(EVT_QEE_RUN_ID, 1)
 class QueryEventError(QueryEvent):
 	''' '''
 
-	def __init__ (self, id, message=''):
+	def __init__ (self, id, message):
 		''' '''
 		super(QueryEventError, self).__init__(EVT_QEE_ERR_ID, id)
 		self.message = message
@@ -51,9 +51,10 @@ EVT_QEE_STOP = wx.PyEventBinder(EVT_QEE_STOP_ID, 1)
 class QueryThread(Thread):
 	''' '''
 
-	def __init__(self, query='', *args, **kwargs):
+	def __init__(self, frame=None, query='', *args, **kwargs):
 		""" """
 		super(QueryThread, self).__init__(*args, **kwargs)
+		self.frame = frame
 		self.query = query
 		self.start()
 
@@ -61,10 +62,10 @@ class QueryThread(Thread):
 		""" """
 		try:
 			event = "ResultEventLoad"
-			data = self.parent.parent.con.query(self.query)
+			data = self.frame.helper.query(self.query)
 		except Exception, exc:
 			event = "QueryEventError"
-			data = str(exc)
+			data = exc
 		finally:
 			wx.CallAfter(Publisher().sendMessage, event, data)
 
@@ -73,11 +74,11 @@ class Query(wx.Panel):
 	
 	instances = {}
 	@staticmethod
-	def instance(parent, id, *args, **kwargs):
+	def instance(parent, id, frame=None, *args, **kwargs):
 		''' Returns a new instance or previosly generated one if found '''
 		if id in Query.instances:
 			return Query.instances[id]
-		Query.instances[id] = Query(parent, id, *args, **kwargs)
+		Query.instances[id] = Query(parent, id, frame=frame, *args, **kwargs)
 		return Query.instances[id]
 
 	def __init__ (self, parent, id, frame=None, *args, **kwargs):
@@ -98,9 +99,9 @@ class Query(wx.Panel):
 	
 	def runQuery(self, e):
 		''' '''
-		queryThread = QueryThread(self.parent, self.queryEditor.GetValue())
+		queryThread = QueryThread(self.frame, self.queryEditor.editorCtrl.GetValue())
 		e.Skip()
 	
-	def queryEventError(self, e):
+	def queryEventError(self, exc):
 		''' '''
-		result = wx.MessageBox(e.message, "Query Failed", wx.OK | wx.ICON_ERROR)
+		wx.MessageBox(str(exc), "Query Failed", wx.OK | wx.ICON_ERROR)

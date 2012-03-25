@@ -49,3 +49,12 @@ class ResultTable(wx.grid.PyGridTableBase):
 		''' '''
 		self.field_names = []
 		self.results = []
+
+	def SetTable(self, object, *attributes):
+		''' '''
+		self.tableRef = weakref.ref(object)
+		return wxGrid.SetTable(self, object, *attributes)
+	
+	def GetTable( self ):
+		''' '''
+		return self.tableRef()

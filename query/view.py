@@ -51,12 +51,12 @@ class QueryEditor(wx.Panel):
 		''' '''
 		super(QueryEditor, self).__init__(parent, id, *args, **kwargs)
 
-		self.queryEditor = QueryEditorTextCtrl(self, wx.ID_ANY)
+		self.editorCtrl = QueryEditorTextCtrl(self, wx.ID_ANY)
 
-		self.SetBackgroundColour(wx.Colour(169,169,169))
+		#self.queryEditor.SetBackgroundColour(wx.Colour(173,113,81))
 		
 		self.sizer = wx.BoxSizer()
-		self.sizer.Add(self.queryEditor, 1, wx.EXPAND)
+		self.sizer.Add(self.editorCtrl, 1, wx.EXPAND)
 		self.SetSizer(self.sizer)
 	
 	def loadQueryDialog(self, e):

@@ -32,7 +32,7 @@ class Browser(wx.Panel):
 		self.sizer.Fit(self)
 
 	databases = []
-	def initDBList(self, connection_name, databases):
+	def initDBList(self, databases):
 		''' '''
 		self.databases = databases
 		

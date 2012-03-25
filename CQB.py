@@ -29,24 +29,30 @@ class CQBFrame(wx.Frame):
 				return
 
 		super(CQBFrame, self).__init__(parent, id, title=con_params['name'], name=con_params['name'], size=(800, 600), *args, **kwargs)
-		self.helper = CQBHelper.instance(int(con_params['id']), con_params)
-
+		self.helper = CQBHelper.instance(con_params['id'], con_params)
+		
 		self.buildWindow()
-		self.Show(True)
+		
+		menu = view.CQBMenu(frame=self)
 
-		#self.OnShell(None)
-		#self.OnFilling(None)
+		self.Show(True)
 
 	def buildWindow(self):
 		''' '''
 		self.window = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
 		self.top = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
 		self.bottom = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
+		
 		self.window.Initialize(self.top)
 		#self.window.SplitHorizontally(self.top, self.bottom, -300)
 
 		self.buildWindowTop()
 		self.buildWindowBottom()
+
+	def showResults(self, execution_time):
+		self.bottom.Show(True)
+		self.result.Show(True)
+		self.window.SplitHorizontally(self.top, self.bottom, 0)
 
 	def buildWindowTop(self):
 		''' '''
@@ -60,6 +66,8 @@ class CQBFrame(wx.Frame):
 		self.top.SetSizer(self.topSizer)
 		self.topSizer.Fit(self.top)
 
+		self.topSizer.SetMinSize((400, 400))
+
 	def buildWindowBottom(self):
 		''' '''
 		self.result = result.Result.instance(self.bottom, wx.ID_ANY, frame=self)
@@ -70,15 +78,19 @@ class CQBFrame(wx.Frame):
 		self.bottom.SetSizer(self.bottomSizer)
 		self.bottomSizer.Fit(self.bottom)
 
-	def OnShell(self, event):
+	def showPyShell(self, event):
 		''' '''
 		frame = ShellFrame(parent=self)
 		frame.Show()
 
-	def OnFilling(self, event):
+	def showPyFilling(self, event):
 		''' '''
 		frame = FillingFrame(parent=self)
 		frame.Show()
+
+	def quitApplication(self, e):
+		self.Close()
+		e.Skip()
 
 class CQB(wx.App):
 	''' '''
@@ -124,9 +136,9 @@ class CQB(wx.App):
 			wx.MessageBox(str(exc), "Initial Connection Failed", wx.OK | wx.ICON_ERROR)
 			return False
 		
-		#except Exception, exc:
-		#	wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
-		#	return False
+		except Exception, exc:
+			wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
+			return False
 
 		return False
 

@@ -21,18 +21,12 @@ class ResultGrid(wx.grid.Grid):
 		''' '''
 		super(ResultGrid, self).__init__(parent, id, *args, **kwargs)
 		
-		self.SetBackgroundColour(wx.Colour(0,66,56))
+		#self.SetBackgroundColour(wx.Colour(255,246,231))
 
 		self.SetTable(table)
-
-		box = wx.BoxSizer()
-		box.Add(self, 1, wx.EXPAND)
-		self.SetSizer(box)
 		
 		self.HideRowLabels()
 		
 		self.SetColLabelAlignment(0, 1)
-		self.AutoSizeColumns(setAsMin=False)
+		#self.AutoSizeColumns(setAsMin=True)
 		self.SetDefaultCellOverflow(False)
-
-		self.Fit()

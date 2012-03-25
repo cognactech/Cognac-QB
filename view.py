@@ -1,6 +1,6 @@
 import wx
 
-class CQBMenu(wx.Menu):
+class CQBMenu(wx.MenuBar):
 	''' '''
 	
 	instances = {}
@@ -12,36 +12,39 @@ class CQBMenu(wx.Menu):
 		self.instances[id] = Query(parent, id)
 		return self.instances[id]
 
-	def __init__ (self, parent, id, *args, **kwargs):
+	def __init__ (self, frame=None, *args, **kwargs):
 		''' '''
-		super(CQBMenu, self).__init__(parent, id, *args, **kwargs)
+		super(CQBMenu, self).__init__(*args, **kwargs)
 		
 		self.menus = {
 			'&File': (
-				(wx.ID_ANY, '&Run Query\tCtrl+R', 'Run Query', wx.EVT_MENU, self.queryEditorPanel.triggerQueryRun),
-				(wx.ID_ANY, '&Refresh\tShift+Ctrl+R', 'Refresh Results', wx.EVT_MENU, self.queryEditorPanel.triggerRefresh),
-				(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser', wx.EVT_MENU, self.quitApplication, self.queryEditorPanel.quitApplication)
+				(wx.ID_ANY, '&Run Query\tCtrl+R', 'Run Query', wx.EVT_MENU, frame.query.runQuery),
+				(),
+				(wx.ID_EXIT, '&Quit\tCtrl+Q', 'Quit Cognac Query Browser', wx.EVT_MENU, frame.quitApplication)
 			),
 			"&Debug": (
-				(wx.ID_ANY, "&Namespace Viewer/tCtrl+Opt+N", "Open Namespace Viewer", wx.EVT_MENU, self.OnShell)
-				(wx.ID_ANY, "&wxPython\tCtrl+Opt+W Shell", "Open Python Shell", wx.EVT_MENU, self.OnFilling)
+				(wx.ID_ANY, "&Namespace Viewer", "Open Namespace Viewer", wx.EVT_MENU, frame.showPyShell),
+				(wx.ID_ANY, "&Python Shell", "Open Python Shell", wx.EVT_MENU, frame.showPyFilling)
 			)
 		}
 
-		menubar = wx.MenuBar()
 		for key, menu in self.menus.items():
 			Menu = wx.Menu()
-			for id, command, label, event_id, event_callback in menu:
-				item = Menu.Append(id, command, label) 
-				try:
-					for callback in event_callback:
-						self.Bind(event_id, callback, item)
-				except:
-					self.Bind(event_id, event_callback, item)
-			menubar.Append(Menu, key)
-		self.SetMenuBar(menubar)
+			for menuData in menu:
+				if len(menuData) > 0:
+					id, command, label, event_id, event_callback = list(menuData)
+					item = Menu.Append(id, command, label)
+					try:
+						for callback in event_callback:
+							frame.Bind(event_id, callback, item)
+					except:
+						frame.Bind(event_id, event_callback, item)
+				else:
+					Menu.AppendSeparator()
+			self.Append(Menu, key)
+		frame.SetMenuBar(self)
 
-class CQBToolbar(wx.Menu):
+class CQBToolbar(wx.ToolBar):
 	''' '''
 	
 	instances = {}

@@ -24,8 +24,8 @@ class BrowserTree(wx.TreeCtrl):
 		self.__collapsing = False
 		self.databases = databases
 		
-		self.SetBackgroundColour(wx.Colour(66,76,75))
-
+		#self.SetBackgroundColour(wx.Colour(176,205,212))
+		
 		self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
 		self.Bind(wx.EVT_TREE_ITEM_COLLAPSING, self.OnCollapseItem)
 

@@ -84,7 +84,14 @@ class Result(wx.Panel):
 
 	def processResult(self, data):
 		''' '''
+		field_names = data.data[0]
+		results = data.data[1]
+		execution_time = data.data[2]
+
 		self.grid.ClearGrid()
-		table = ResultTable(data[0], data[1])
+
+		table = model.ResultTable(field_names, results)
 		self.grid.SetTable(table)
-		self.ForceRefresh()
+		self.grid.ForceRefresh()
+
+		self.frame.showResults(execution_time)

@@ -24,6 +24,17 @@ class CQBHelper(object):
 
 		self.con = connection.CQBConnection.instance(self.id, self.driver)
 
+	def query(self, query):
+		''' '''
+		''' '''	
+		if self.con.is_connected() != True:
+			self.con.connect(host=self.host, user=self.user, passwd=self.passwd, port=self.port)
+		if self.con.is_connected() == True:
+			results = self.con.query(query)
+			return results
+
+		return False
+
 	def reconnect(self):
 		''' '''
 		if self.con.is_connected() == True:
