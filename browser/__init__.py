@@ -1,7 +1,6 @@
 #! /usr/bin/python
 
 import wx
-import threading
 
 import model, view
 
@@ -10,21 +9,25 @@ class Browser(wx.Panel):
 	
 	instances = {}
 	@staticmethod
-	def instance(parent, id):
+	def instance(parent, id, *args, **kwargs):
 		''' Returns a new instance or previosly generated one if found '''
 		if id in Browser.instances:
 			return Browser.instances[id]
-		Browser.instances[id] = Browser(parent, id)
+		Browser.instances[id] = Browser(parent, id, *args, **kwargs)
 		return Browser.instances[id]
 
-	def __init__ (self, parent, id, *args, **kwargs):
+	def __init__ (self, parent, id, frame=None, *args, **kwargs):
 		''' '''	
 		super(Browser, self).__init__(parent, id, *args, **kwargs)
 		
-		self.tree = view.BrowserTree(self)
+		self.frame = frame
+		
+		dbs = self.frame.helper.databases()
+
+		self.tree = view.BrowserTree(self, databases=dbs)
 
 		self.sizer = wx.BoxSizer()
-		self.sizer.Add(self.tree, 0, wx.EXPAND)
+		self.sizer.Add(self.tree, 1, wx.EXPAND)
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 

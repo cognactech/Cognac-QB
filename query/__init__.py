@@ -73,21 +73,23 @@ class Query(wx.Panel):
 	
 	instances = {}
 	@staticmethod
-	def instance(parent, id):
+	def instance(parent, id, *args, **kwargs):
 		''' Returns a new instance or previosly generated one if found '''
 		if id in Query.instances:
 			return Query.instances[id]
-		Query.instances[id] = Query(parent, id)
+		Query.instances[id] = Query(parent, id, *args, **kwargs)
 		return Query.instances[id]
 
-	def __init__ (self, parent, id, *args, **kwargs):
+	def __init__ (self, parent, id, frame=None, *args, **kwargs):
 		''' '''	
 		super(Query, self).__init__(parent, id, *args, **kwargs)
 		
+		self.frame = frame
+
 		self.Bind(EVT_QEE_RUN, self.runQuery, self)
 		Publisher().subscribe(self.queryEventError, "QueryEventError")
 
-		self.queryEditor = view.QueryEditor(self)
+		self.queryEditor = view.QueryEditor(self, wx.ID_ANY)
 
 		self.sizer = wx.BoxSizer()
 		self.sizer.Add(self.queryEditor, 1, wx.EXPAND)

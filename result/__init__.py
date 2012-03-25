@@ -58,16 +58,18 @@ class Result(wx.Panel):
 
 	instances = {}
 	@staticmethod
-	def instance(parent, id):
+	def instance(parent, id, *args, **kwargs):
 		''' Returns a new instance or previosly generated one if found '''
 		if id in Result.instances:
 			return Result.instances[id]
-		Result.instances[id] = Result(parent, id)
+		Result.instances[id] = Result(parent, id, *args, **kwargs)
 		return Result.instances[id]
 
-	def __init__ (self, parent, id, *args, **kwargs):
+	def __init__ (self, parent, id, frame=None, *args, **kwargs):
 		''' '''
 		super(Result, self).__init__(parent, id, *args, **kwargs)
+		
+		self.frame = frame
 		
 		Publisher().subscribe(self.processResult, "ResultEventLoad")
 

@@ -21,6 +21,8 @@ class ResultGrid(wx.grid.Grid):
 		''' '''
 		super(ResultGrid, self).__init__(parent, id, *args, **kwargs)
 		
+		self.SetBackgroundColour(wx.Colour(0,66,56))
+
 		self.SetTable(table)
 
 		box = wx.BoxSizer()

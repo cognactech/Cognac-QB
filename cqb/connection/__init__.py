@@ -22,7 +22,13 @@ class CQBConnection():
 		self.driver_type = driver_type.lower()
 		#try to import the driver
 		try:
-			cls = getattr(driver, "CQBConnectionDriver_%s" % self.driver_type)
+			module_name = "connection.drivers.%s" % self.driver_type
+			__import__(module_name)
+			
+			self.module = sys.modules[module_name]
+			
+			cls = getattr(self.module, "CQBConnectionDriver_%s" % self.driver_type)
+			self.driver = cls()
 		except:
 			raise errors.CQBConnectionError("Driver %s not found" % self.driver_type)
 

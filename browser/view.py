@@ -17,12 +17,15 @@ class BrowserToolbar():
 class BrowserTree(wx.TreeCtrl):
 	''' '''
 	
-	def __init__(self, parent, *args, **kwargs):
+	def __init__(self, parent, databases=(), *args, **kwargs):
 		''' '''
 		super(BrowserTree, self).__init__(parent, *args, **kwargs)
 		
 		self.__collapsing = False
+		self.databases = databases
 		
+		self.SetBackgroundColour(wx.Colour(66,76,75))
+
 		self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnExpandItem)
 		self.Bind(wx.EVT_TREE_ITEM_COLLAPSING, self.OnCollapseItem)
 
