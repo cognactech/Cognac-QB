@@ -36,7 +36,7 @@ class CQBFrame(wx.Frame):
 
 	def buildWindow(self):
 		''' '''
-		self.window = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
+		self.window = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE | wx.SP_NOSASH)
 		self.top = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
 		self.bottom = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
 		
@@ -145,7 +145,7 @@ class CQB(wx.App):
 		database = CQBDatabase.instance()
 		try:
 			profiles = list(database.profiles())
-			dialog = wx.SingleChoiceDialog(None, "Select a Profile", "Cognac QueryBrowser", [x[5] for x in profiles])
+			dialog = wx.SingleChoiceDialog(None, "Select a Profile", "Cognac Query Browser", [x[5] for x in profiles])
 			while True:
 				if dialog.ShowModal() == wx.ID_OK:
 					# get selected profile and destroy dialog
