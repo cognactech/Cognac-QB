@@ -49,7 +49,7 @@ class CQBFrame(wx.Frame):
 		self.bottom.Show(True)
 		self.result.Show(True)
 		self.window.SplitHorizontally(self.top, self.bottom, 300)
-		self.statusbar.SetFields([query, '%s records' % rows, '%s sec elapsed' % execution_time])
+		self.statusbar.SetFields([query, str('%s records' % rows), str('%s sec elapsed' % execution_time)])
 
 	def buildWindowTop(self):
 		''' '''
@@ -131,11 +131,11 @@ class CQB(wx.App):
 
 		except connection.errors.CQBConnectionError, exc:
 			wx.MessageBox(str(exc), "Initial Connection Failed", wx.OK | wx.ICON_ERROR)
-		return False
+			return False
 
-		#except Exception, exc:
-		#	wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
-		#	return False
+		except Exception, exc:
+			wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
+			return False
 
 		return False
 
@@ -159,9 +159,9 @@ class CQB(wx.App):
 			wx.MessageBox(str(exc), "New Connection Failed", wx.OK | wx.ICON_ERROR)
 			return False
 
-		#except Exception, exc:
-		#	wx.MessageBox(str(exc), "Load Profile Error", wx.OK | wx.ICON_ERROR)
-		#	return False
+		except Exception, exc:
+			wx.MessageBox(str(exc), "Load Profile Error", wx.OK | wx.ICON_ERROR)
+			return False
 
 if __name__ == '__main__':
 	app = CQB.instance()

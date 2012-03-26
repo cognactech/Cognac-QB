@@ -79,7 +79,7 @@ class Result(wx.Panel):
 			self.grid.SetTable(table)
 			self.grid.ForceRefresh()
 		except:
-			self.grid = view.ResultList(self, wx.ID_ANY, field_names=field_names, results=results)
+			self.grid = view.ResultList(self, wx.ID_ANY, style=wx.LC_EDIT_LABELS, field_names=field_names, results=results)
 			self.sizer.Add(self.grid, 1, wx.EXPAND)
 
 		self.frame.showResults(query, len(results), execution_time)
