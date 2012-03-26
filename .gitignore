@@ -34,3 +34,9 @@
 ehthumbs.db
 Icon?
 Thumbs.db
+
+.pydevproject
+
+browser/__init__.py
+
+.project

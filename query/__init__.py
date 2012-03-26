@@ -5,8 +5,8 @@ import wx
 from threading import Thread
 from wx.lib.pubsub import Publisher
 
-import query.model
-import query.view
+import model
+import view
 
 class QueryEvent(wx.PyCommandEvent):
 	''' '''
