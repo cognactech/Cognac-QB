@@ -2,7 +2,8 @@
 
 import wx
 
-import model, view
+import model
+import view
 
 class Browser(wx.Panel):
 	''' '''
@@ -19,9 +20,9 @@ class Browser(wx.Panel):
 	def __init__ (self, parent, id, frame=None, *args, **kwargs):
 		''' '''	
 		super(Browser, self).__init__(parent, id, *args, **kwargs)
-		
+
 		self.frame = frame
-		self.SetBackgroundColour(wx.Colour(0,0,0))
+		#self.SetBackgroundColour(wx.Colour(0,0,0))
 
 		dbs = self.frame.helper.databases()
 

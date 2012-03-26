@@ -71,11 +71,11 @@ class Result(wx.Panel):
 		
 		self.frame = frame
 		
-		self.SetBackgroundColour(wx.Colour(0,0,0))
+		#self.SetBackgroundColour(wx.Colour(0,0,0))
 
 		Publisher().subscribe(self.processResultGrid, "ResultEventLoad")
 
-		self.sizer = wx.GridSizer()
+		self.sizer = wx.BoxSizer()
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 
@@ -87,7 +87,7 @@ class Result(wx.Panel):
 
 		self.grid = view.ResultList(self, wx.ID_ANY, field_names=field_names, results=results)
 
-		self.sizer.Add(self.grid, 1, wx.EXPAND|wx.ALL, 10)
+		self.sizer.Add(self.grid, 1, wx.EXPAND)
 
 		self.frame.showResults(execution_time)
 
@@ -106,6 +106,6 @@ class Result(wx.Panel):
 			self.grid.ForceRefresh()
 		except:
 			self.grid = view.ResultGrid(self, wx.ID_ANY, table=table)
-			self.sizer.Add(self.grid, 1, wx.EXPAND|wx.ALL, 10)
+			self.sizer.Add(self.grid, 1, wx.EXPAND)
 
 		self.frame.showResults(query, len(results), execution_time)

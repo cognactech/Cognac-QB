@@ -42,4 +42,3 @@ class ResultList(dv.DataViewListCtrl):
 
 		for result in results:
 			self.AppendItem(result)
-		

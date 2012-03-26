@@ -132,10 +132,10 @@ class CQB(wx.App):
 		except connection.errors.CQBConnectionError, exc:
 			wx.MessageBox(str(exc), "Initial Connection Failed", wx.OK | wx.ICON_ERROR)
 			return False
-		
-		#except Exception, exc:
-		#	wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
-		#	return False
+
+		except Exception, exc:
+			wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
+			return False
 
 		return False
 
@@ -158,7 +158,7 @@ class CQB(wx.App):
 		except connection.errors.CQBConnectionError, exc:
 			pass#wx.MessageBox(str(exc), "New Connection Failed", wx.OK | wx.ICON_ERROR)
 			return False
-		
+
 		except Exception, exc:
 			wx.MessageBox(str(exc), "Load Profile Error", wx.OK | wx.ICON_ERROR)
 			return False

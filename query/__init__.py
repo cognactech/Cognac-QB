@@ -5,7 +5,8 @@ import wx
 from threading import Thread
 from wx.lib.pubsub import Publisher
 
-import model, view
+import query.model
+import query.view
 
 class QueryEvent(wx.PyCommandEvent):
 	''' '''
@@ -22,7 +23,7 @@ class QueryEventRun(QueryEvent):
 
 	def __init__ (self, id):
 		''' '''
-		super(ResultEventLoad, self).__init__(EVT_QEE_RUN_ID, id)
+		super(QueryEventRun, self).__init__(EVT_QEE_RUN_ID, id)
 
 EVT_QEE_RUN_ID = wx.NewEventType()
 EVT_QEE_RUN = wx.PyEventBinder(EVT_QEE_RUN_ID, 1)
@@ -43,7 +44,7 @@ class QueryEventStop(QueryEvent):
 
 	def __init__ (self, id):
 		''' '''
-		super(ResultEventLoad, self).__init__(EVT_QEE_STOP_ID, id)
+		super(QueryEventStop, self).__init__(EVT_QEE_STOP_ID, id)
 
 EVT_QEE_STOP_ID = wx.NewEventType()
 EVT_QEE_STOP = wx.PyEventBinder(EVT_QEE_STOP_ID, 1)
@@ -88,15 +89,15 @@ class Query(wx.Panel):
 		super(Query, self).__init__(parent, id, *args, **kwargs)
 		
 		self.frame = frame
-		self.SetBackgroundColour(wx.Colour(0,0,0))
+		#self.SetBackgroundColour(wx.Colour(0,0,0))
 		
 		self.Bind(EVT_QEE_RUN, self.runQuery, self)
 		Publisher().subscribe(self.queryEventError, "QueryEventError")
 
 		self.queryEditor = view.QueryEditor(self, wx.ID_ANY)
 
-		self.sizer = wx.GridSizer()
-		self.sizer.Add(self.queryEditor, 1, wx.EXPAND|wx.ALL, 10)
+		self.sizer = wx.BoxSizer()
+		self.sizer.Add(self.queryEditor, 1, wx.EXPAND)
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 	

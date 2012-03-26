@@ -7,10 +7,10 @@ class CQBMenu(wx.MenuBar):
 	@staticmethod
 	def instance(parent, id):
 		''' Returns a new instance or previosly generated one if found '''
-		if id in self.instances:
-			return self.instances[id]
-		self.instances[id] = Query(parent, id)
-		return self.instances[id]
+		if id in CQBMenu.instances:
+			return CQBMenu.instances[id]
+		CQBMenu.instances[id] = CQBMenu(parent, id)
+		return CQBMenu.instances[id]
 
 	def __init__ (self, frame=None, *args, **kwargs):
 		''' '''

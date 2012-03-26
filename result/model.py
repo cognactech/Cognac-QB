@@ -37,9 +37,9 @@ class ResultGridTable(wx.grid.PyGridTableBase):
 		''' '''
 		row = self.results[row]
 		if col in row:
-			return '[NULL]'
-		else:
 			return row[col]
+		else:
+			return '[NULL]'
 	
 	def SetValue(self, row, col, value):
 		''' '''
