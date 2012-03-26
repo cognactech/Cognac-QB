@@ -36,9 +36,9 @@ class CQBFrame(wx.Frame):
 
 	def buildWindow(self):
 		''' '''
-		self.window = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE | wx.SP_THIN_SASH)
-		self.top = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
-		self.bottom = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
+		self.window = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
+		self.top = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_NONE)
+		self.bottom = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_NONE)
 		
 		self.window.Initialize(self.top)
 
@@ -54,7 +54,7 @@ class CQBFrame(wx.Frame):
 	def buildWindowTop(self):
 		''' '''
 		self.topSplitter = wx.SplitterWindow(self.top, -1, style=wx.SP_LIVE_UPDATE)
-		self.query = query.Query.instance(self.topSplitter, wx.ID_ANY, style=wx.BORDER_SUNKEN, frame=self)
+		self.query = query.Query.instance(self.topSplitter, wx.ID_ANY, style=wx.wx.BORDER_SUNKEN, frame=self)
 		self.browser = browser.Browser.instance(self.topSplitter, wx.ID_ANY, style=wx.BORDER_SUNKEN, frame=self)
 		self.topSplitter.SplitVertically(self.browser, self.query, 230)
 
@@ -67,7 +67,7 @@ class CQBFrame(wx.Frame):
 
 	def buildWindowBottom(self):
 		''' '''
-		self.result = result.Result.instance(self.bottom, wx.ID_ANY, frame=self)
+		self.result = result.Result.instance(self.bottom, wx.ID_ANY, style=wx.BORDER_NONE, frame=self)
 		self.bottom.Show(False)
 
 		self.bottomSizer = wx.BoxSizer()
@@ -95,7 +95,7 @@ class CQB(wx.App):
 	instances = {}
 	@staticmethod
 	def instance(id=wx.ID_ANY):
-		''' Returns a new instance or previosly generated one if found '''
+		''' Returns a new instance or previously generated one if found '''
 		if id in CQB.instances:
 			return CQB.instances[id]
 		CQB.instances[id] = CQB()
@@ -131,11 +131,11 @@ class CQB(wx.App):
 
 		except connection.errors.CQBConnectionError, exc:
 			wx.MessageBox(str(exc), "Initial Connection Failed", wx.OK | wx.ICON_ERROR)
-			return False
+		return False
 
-		except Exception, exc:
-			wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
-			return False
+		#except Exception, exc:
+		#	wx.MessageBox(str(exc), "Application Error", wx.OK | wx.ICON_ERROR)
+		#	return False
 
 		return False
 
@@ -152,16 +152,16 @@ class CQB(wx.App):
 					profile = profiles[dialog.GetSelection()]
 					dialog.Destroy()
 
-					# return profile connection paramters
+					# return profile connection parameters
 					return {'id': profile[0], 'host': profile[1], 'user': profile[2], 'passwd': profile[3], 'port': profile[4], 'name': profile[5]}
 
 		except connection.errors.CQBConnectionError, exc:
-			pass#wx.MessageBox(str(exc), "New Connection Failed", wx.OK | wx.ICON_ERROR)
+			wx.MessageBox(str(exc), "New Connection Failed", wx.OK | wx.ICON_ERROR)
 			return False
 
-		except Exception, exc:
-			wx.MessageBox(str(exc), "Load Profile Error", wx.OK | wx.ICON_ERROR)
-			return False
+		#except Exception, exc:
+		#	wx.MessageBox(str(exc), "Load Profile Error", wx.OK | wx.ICON_ERROR)
+		#	return False
 
 if __name__ == '__main__':
 	app = CQB.instance()

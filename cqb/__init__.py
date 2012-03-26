@@ -25,6 +25,10 @@ class CQBHelper(object):
 		self.driver = 'mysql'
 
 		self.con = connection.CQBConnection.instance(self.id, self.driver)
+	
+	def get_params(self):
+		''' '''
+		return {'name': self.name, 'host': self.host, 'user': self.user, 'name': self.name, 'passwd': self.passwd, 'port': self.port}
 
 	def query(self, query, benchmark=False):
 		''' '''
@@ -65,6 +69,7 @@ class CQBHelper(object):
 			tresults = self.tables(database[0])
 			tree[database[0]] = tresults[1]
 		if benchmark == True: end = time.clock(); print end - start
+		del results, tresults
 		return tree
 
 	def databases(self, benchmark=False):

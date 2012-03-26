@@ -17,13 +17,11 @@ class BrowserMenu():
 class BrowserTree(dv.DataViewTreeCtrl):
 	''' '''
 	
-	def __init__(self, parent, databases=(), *args, **kwargs):
+	def __init__(self, parent, *args, **kwargs):
 		''' '''
 		super(BrowserTree, self).__init__(parent, *args, **kwargs)
 		
 		self.__collapsing = False
-
-		self.databases = databases
 
 	def build(self, profile, tree):
 

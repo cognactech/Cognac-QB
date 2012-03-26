@@ -1,9 +1,11 @@
 #! /usr/bin/python
 
-import wx
+import wx, time
 
 from threading import Thread
 from wx.lib.pubsub import Publisher
+
+from cqb import CQBHelper
 
 import model
 import view
@@ -11,17 +13,18 @@ import view
 class BrowserThread(Thread):
 	''' '''
 
-	def __init__(self, frame=None, *args, **kwargs):
+	def __init__(self, con_params, *args, **kwargs):
 		""" """
 		super(BrowserThread, self).__init__(*args, **kwargs)
-		self.frame = frame
+		self.con_params = con_params
 		self.start()
 
 	def run(self):
-		""" """
+		''' '''
 		try:
 			event = "BrowserEventLoad"
-			data = self.frame.helper.db_table_tree(benchmark=True)
+			helper = CQBHelper.instance(time.clock(), self.con_params)
+			data = helper.db_table_tree()
 		except Exception, exc:
 			event = "BrowserEventError"
 			data = exc
@@ -52,9 +55,12 @@ class Browser(wx.Panel):
 
 		dbs = self.frame.helper.databases()
 
-		self.tree = view.BrowserTree(self, databases=dbs[1])
+		self.tree = view.BrowserTree(self)
 
-		BrowserThread(frame=self.frame)
+		BrowserThread(self.frame.helper.get_params())
+		
+		#data = self.frame.helper.db_table_tree()
+		#self.tree.build(self.frame.helper.name, data)
 
 		self.sizer = wx.BoxSizer()
 		self.sizer.Add(self.tree, 1, wx.EXPAND)
@@ -67,4 +73,4 @@ class Browser(wx.Panel):
 	
 	def browserEventError(self, exc):
 		''' '''
-		wx.MessageBox(str(exc), "Browser Error", wx.OK | wx.ICON_ERROR)
+		wx.MessageBox(str(exc), "Browser Failed", wx.OK | wx.ICON_ERROR)

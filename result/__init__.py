@@ -41,18 +41,6 @@ class ResultEventError(ResultEvent):
 EVT_QRE_ERR_ID = wx.NewEventType()
 EVT_QRE_ERR = wx.PyEventBinder(EVT_QRE_ERR_ID, 1)
 
-class ResultThread(Thread):
-	''' '''
-
-	def __init__(self, *args, **kwargs):
-		""" """
-		super(ResultThread, self).__init__(*args, **kwargs)
-		self.start()
-
-	def run(self):
-		""" """
-		pass
-
 class Result(wx.Panel):
 	''' '''
 
@@ -79,17 +67,22 @@ class Result(wx.Panel):
 		self.SetSizer(self.sizer)
 		self.sizer.Fit(self)
 
-	def processResult(self, data):
+	def processResultList(self, data):
 		''' '''
 		field_names = data.data[0]
 		results = data.data[1]
 		execution_time = data.data[2]
+		query = data.data[3]
 
-		self.grid = view.ResultList(self, wx.ID_ANY, field_names=field_names, results=results)
+		try:
+			self.grid.ClearGrid()
+			self.grid.SetTable(table)
+			self.grid.ForceRefresh()
+		except:
+			self.grid = view.ResultList(self, wx.ID_ANY, field_names=field_names, results=results)
+			self.sizer.Add(self.grid, 1, wx.EXPAND)
 
-		self.sizer.Add(self.grid, 1, wx.EXPAND)
-
-		self.frame.showResults(execution_time)
+		self.frame.showResults(query, len(results), execution_time)
 
 	def processResultGrid(self, data):
 		''' '''

@@ -24,7 +24,7 @@ class ResultGrid(wx.grid.Grid):
 
 		self.SetTable(table)
 		
-		self.HideRowLabels()
+		self.SetRowLabelSize(25)
 		
 		self.SetColLabelAlignment(0, 1)
 		#self.AutoSizeColumns(setAsMin=True)
@@ -33,7 +33,7 @@ class ResultGrid(wx.grid.Grid):
 class ResultList(dv.DataViewListCtrl):
 	''' '''
 	
-	def __init__ (self, parent, id, field_names=(''), results=((''), ), *args, **kwargs):
+	def __init__ (self, parent, id, field_names=(''), results=((''),), *args, **kwargs):
 		''' '''
 		super(ResultList, self).__init__(parent, id, *args, **kwargs)
 

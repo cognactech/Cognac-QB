@@ -52,7 +52,7 @@ EVT_QEE_STOP = wx.PyEventBinder(EVT_QEE_STOP_ID, 1)
 class QueryThread(Thread):
 	''' '''
 
-	def __init__(self, frame=None, query='', *args, **kwargs):
+	def __init__(self, frame, query, *args, **kwargs):
 		""" """
 		super(QueryThread, self).__init__(*args, **kwargs)
 		self.frame = frame
@@ -63,7 +63,7 @@ class QueryThread(Thread):
 		""" """
 		try:
 			event = "ResultEventLoad"
-			data = self.frame.helper.query(self.query, benchmark=True)
+			data = self.frame.helper.query(self.query, benchmark=False)
 			data = list(data)
 			data.append(self.query)
 		except Exception, exc:

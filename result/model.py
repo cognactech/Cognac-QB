@@ -36,10 +36,10 @@ class ResultGridTable(wx.grid.PyGridTableBase):
 	def GetValue(self, row, col):
 		''' '''
 		row = self.results[row]
-		if col in row:
-			return row[col]
-		else:
+		if row[col] == None and row[col] <= 0:
 			return '[NULL]'
+		else:
+			return row[col]
 	
 	def SetValue(self, row, col, value):
 		''' '''
@@ -64,6 +64,6 @@ class ResultGridTable(wx.grid.PyGridTableBase):
 		self.tableRef = weakref.ref(object)
 		return wxGrid.SetTable(self, object, *attributes)
 	
-	def GetTable( self ):
+	def GetTable(self):
 		''' '''
 		return self.tableRef()
