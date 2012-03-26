@@ -78,7 +78,7 @@ class Query(wx.Panel):
 	instances = {}
 	@staticmethod
 	def instance(parent, id, frame=None, *args, **kwargs):
-		''' Returns a new instance or previosly generated one if found '''
+		''' Returns a new instance or previously generated one if found '''
 		if id in Query.instances:
 			return Query.instances[id]
 		Query.instances[id] = Query(parent, id, frame=frame, *args, **kwargs)
@@ -103,7 +103,7 @@ class Query(wx.Panel):
 	
 	def runQuery(self, e):
 		''' '''
-		queryThread = QueryThread(self.frame, self.queryEditor.editorCtrl.GetValue())
+		QueryThread(self.frame, self.queryEditor.editorCtrl.GetValue())
 		e.Skip()
 
 	def cancelQuery(self, e):

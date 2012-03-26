@@ -1,5 +1,6 @@
 import connection
 import sqlite3
+import time
 
 class CQBHelper(object):
 	''' '''
@@ -7,7 +8,7 @@ class CQBHelper(object):
 	instances = {}
 	@staticmethod
 	def instance(id, con_params):
-		''' Returns a new instance or previosly generated one if found '''
+		''' Returns a new instance or previously generated one if found '''
 		if id in CQBHelper.instances:
 			return CQBHelper.instances[id]
 		CQBHelper.instances[id] = CQBHelper(id, con_params)
@@ -25,15 +26,16 @@ class CQBHelper(object):
 
 		self.con = connection.CQBConnection.instance(self.id, self.driver)
 
-	def query(self, query):
+	def query(self, query, benchmark=False):
 		''' '''
-		''' '''	
+		if benchmark == True: start = time.clock()
 		if self.con.is_connected() != True:
 			self.con.connect(host=self.host, user=self.user, passwd=self.passwd, port=self.port)
 		if self.con.is_connected() == True:
 			results = self.con.query(query)
+			if benchmark == True: end = time.clock(); print end - start
 			return results
-
+		
 		return False
 
 	def reconnect(self):
@@ -54,43 +56,51 @@ class CQBHelper(object):
 				return True
 		return False
 		
-	def db_table_tree(self):
+	def db_table_tree(self, benchmark=False):
 		''' '''
 		tree = {}
-		results = self.databases()
+		if benchmark == True: start = time.clock()
+		results = self.databases(benchmark=False)
 		for database in results[1]:
 			tables = []
-			tresults = self.tables(database[0])
+			tresults = self.tables(database[0], benchmark=False)
 			for table in tresults[1]:
 				tables.append(table[0])
 			tree[database[0]] = tables
+		if benchmark == True: end = time.clock(); print end - start
 		return tree
 
-	def databases(self):
+	def databases(self, benchmark=False):
 		''' '''	
+		if benchmark == True: start = time.clock()
 		if self.con.is_connected() != True:
 			self.con.connect(host=self.host, user=self.user, passwd=self.passwd, port=self.port)
 		if self.con.is_connected() == True:
 			results = self.con.query('SHOW DATABASES')
+			if benchmark == True: end = time.clock(); print end - start
 			return results
 		return False
 
-	def tables(self, db_name=None):
+	def tables(self, db_name=None, benchmark=False):
 		''' '''	
+		if benchmark == True: start = time.clock()
 		if db_name != None:
 			self.use(db_name)
 		if self.con.is_connected() != True:
 			self.con.connect(host=self.host, user=self.user, passwd=self.passwd, port=self.port)
 		if self.con.is_connected() == True:
 			results = self.con.query('SHOW TABLES')
+			if benchmark == True: end = time.clock(); print end - start
 			return results
 		return False
 
-	def columns (self, table_name):
+	def columns (self, table_name, benchmark=False):
+		if benchmark == True: start = time.clock()
 		if self.con.is_connected() != True:
 			self.con.connect(host=self.host, user=self.user, passwd=self.passwd, port=self.port)
 		if self.con.is_connected() == True:
 			#results = self.con.query(SHOW COLUMNS FROM ?' % table_name)
+			if benchmark == True: end = time.clock(); print end - start
 			return []
 		return False
 
@@ -112,5 +122,7 @@ class CQBDatabase(object):
 		self.cursor = conn.cursor()
 
 	def profiles(self):
+		start = time.clock()
 		self.cursor.execute('SELECT * FROM connections')
+		end = time.clock(); print end - start
 		return self.cursor

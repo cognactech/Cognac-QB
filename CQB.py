@@ -36,7 +36,7 @@ class CQBFrame(wx.Frame):
 
 	def buildWindow(self):
 		''' '''
-		self.window = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE | wx.SP_NOSASH)
+		self.window = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE | wx.SP_THIN_SASH)
 		self.top = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
 		self.bottom = wx.Panel(self.window, wx.ID_ANY, style=wx.BORDER_SUNKEN)
 		
@@ -48,8 +48,8 @@ class CQBFrame(wx.Frame):
 	def showResults(self, query, rows, execution_time):
 		self.bottom.Show(True)
 		self.result.Show(True)
-		self.window.SplitHorizontally(self.top, self.bottom, 0)
-		self.statusbar.SetFields([query, '%s records' % rows, '%s secs elapsed' % execution_time])
+		self.window.SplitHorizontally(self.top, self.bottom, 300)
+		self.statusbar.SetFields([query, '%s records' % rows, '%s sec elapsed' % execution_time])
 
 	def buildWindowTop(self):
 		''' '''
