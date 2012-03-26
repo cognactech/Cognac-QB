@@ -63,7 +63,7 @@ class QueryThread(Thread):
 		""" """
 		try:
 			event = "ResultEventLoad"
-			data = self.frame.helper.query(self.query)
+			data = self.frame.helper.query(self.query, benchmark=True)
 			data = list(data)
 			data.append(self.query)
 		except Exception, exc:

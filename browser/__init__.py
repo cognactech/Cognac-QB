@@ -21,7 +21,7 @@ class BrowserThread(Thread):
 		""" """
 		try:
 			event = "BrowserEventLoad"
-			data = self.frame.helper.db_table_tree()
+			data = self.frame.helper.db_table_tree(benchmark=True)
 		except Exception, exc:
 			event = "BrowserEventError"
 			data = exc

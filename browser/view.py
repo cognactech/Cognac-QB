@@ -27,11 +27,11 @@ class BrowserTree(dv.DataViewTreeCtrl):
 
 	def build(self, profile, tree):
 
-		isz = (16,16)
+		isz = (16, 16)
 		il = wx.ImageList(*isz)
-		fldridx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER,      wx.ART_OTHER, isz))
+		fldridx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER, wx.ART_OTHER, isz))
 		fldropenidx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER_OPEN, wx.ART_OTHER, isz))
-		fileidx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
+		fileidx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
 		self.SetImageList(il)
 
 		self.root = self.AppendContainer(dv.NullDataViewItem, profile, fldridx, fldropenidx)
@@ -39,4 +39,4 @@ class BrowserTree(dv.DataViewTreeCtrl):
 		for d, t in tree.items():
 			parent = self.AppendContainer(self.root, d, fldridx, fldropenidx)
 			for i in t:
-				self.AppendItem(parent, i, fileidx, fileidx)
+				self.AppendItem(parent, i[0], fileidx, fileidx)

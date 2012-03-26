@@ -60,13 +60,10 @@ class CQBHelper(object):
 		''' '''
 		tree = {}
 		if benchmark == True: start = time.clock()
-		results = self.databases(benchmark=False)
+		results = self.databases()
 		for database in results[1]:
-			tables = []
-			tresults = self.tables(database[0], benchmark=False)
-			for table in tresults[1]:
-				tables.append(table[0])
-			tree[database[0]] = tables
+			tresults = self.tables(database[0])
+			tree[database[0]] = tresults[1]
 		if benchmark == True: end = time.clock(); print end - start
 		return tree
 
